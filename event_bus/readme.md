@@ -8,9 +8,11 @@
 - [JAD3N/event-bus](https://github.com/JAD3N/event-bus/tree/master)
   - ディスパッチ・サブスクライブのAPIをマクロで行う
   - イベントトレイトとしてキャンセルの状態を取得するメソッドを定義している．
+  - グローバルなイベントハンドラを保持するために型へのdowncastを用いている．
+  - 非同期なイベントハンドラを持つことはできない．
   
 - [dimitri-br/Simple-Event-Bus](https://github.com/dimitri-br/Simple-Event-Bus)
-  - どんな型もイベントとして取ることができる．
+  - どんな型もイベントとして取ることができる．シングルスレッドが前提．
 - [sachanganesh/eventador-rs](https://github.com/sachanganesh/eventador-rs)
   - リングバッファを用いている
 - [sizpounder/tram](https://github.com/sixpounder/tram)
