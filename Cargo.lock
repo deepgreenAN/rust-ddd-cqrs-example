@@ -193,10 +193,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ddd_cqrs_core"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "serde",
+ "uuid",
+]
+
+[[package]]
 name = "domain"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "ddd_cqrs_core",
  "email_address",
  "serde",
  "thiserror",
