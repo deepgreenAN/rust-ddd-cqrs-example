@@ -166,7 +166,7 @@ pub mod orm {
     #[sea_orm(table_name = "bank_account")]
     pub struct Model {
         /// id
-        #[sea_orm(primary_key)]
+        #[sea_orm(primary_key, auto_increment = false, unique)]
         id: BankAccountId,
         /// 口座が有効かどうか
         opened: bool,

@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 [dependencies]
 async-std = { version = "1", features = ["attributes", "tokio1"] }
-domain = { path = "../domain"}
+domain = { path = "../domain", features = ["server"]}
 
 [dependencies.sea-orm-migration]
 version = "0.11.0"

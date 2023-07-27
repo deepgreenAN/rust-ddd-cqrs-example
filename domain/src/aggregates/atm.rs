@@ -101,7 +101,7 @@ pub mod orm {
     #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
     #[sea_orm(table_name = "atm")]
     pub struct Model {
-        #[sea_orm(primary_key)]
+        #[sea_orm(primary_key, auto_increment = false, unique)]
         id: AtmId,
         location: AtmLocation,
         total_cash: f64,
