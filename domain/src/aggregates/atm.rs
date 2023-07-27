@@ -1,6 +1,6 @@
 mod atm_location;
 
-use crate::error::DomainError;
+use crate::error::{AtmError, DomainError};
 use crate::events::atm_events::AtmEvents;
 use crate::id::Id;
 use atm_location::AtmLocation;
@@ -47,6 +47,36 @@ impl Atm {
             events_list: DomainEventList::new(),
         })
     }
+    pub fn id(&self) -> AtmId {
+        self.id
+    }
+    pub fn location(&self) -> &AtmLocation {
+        &self.location
+    }
+    pub fn total_cash(&self) -> f64 {
+        self.total_cash
+    }
+    // -------------------------------------------------------------------------------------------------
+    // 以下がドメインロジック
+
+    /// Atmに現金をチャージ
+    pub fn charge_cash(&mut self, amount: f64) -> Result<(), DomainError> {
+        self.total_cash += amount;
+        Ok(())
+    }
+    /// Atmから現金を引き出す
+    pub fn withdraw(&mut self, amount: f64) -> Result<(), DomainError> {
+        if amount < self.total_cash {
+            self.total_cash -= amount;
+            Ok(())
+        } else {
+            Err(AtmError::CannotWithdrawError {
+                total_cash: self.total_cash,
+                withdraw_amount: amount,
+            }
+            .into())
+        }
+    }
 }
 
 impl Aggregate for Atm {
@@ -56,5 +86,61 @@ impl Aggregate for Atm {
     }
     fn domain_events_mut(&mut self) -> &mut DomainEventList<Self::Event> {
         &mut self.events_list
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// sea_orm用Model
+
+#[cfg(feature = "server")]
+pub mod orm {
+    use super::*;
+    use sea_orm::entity::prelude::*;
+
+    /// Atmに対するORMモデル．
+    #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+    #[sea_orm(table_name = "atm")]
+    pub struct Model {
+        #[sea_orm(primary_key)]
+        id: AtmId,
+        location: AtmLocation,
+        total_cash: f64,
+    }
+
+    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+    pub enum Relation {}
+
+    impl ActiveModelBehavior for ActiveModel {}
+
+    impl From<Model> for Atm {
+        fn from(value: Model) -> Self {
+            let Model {
+                id,
+                location,
+                total_cash,
+            } = value;
+            Self {
+                id,
+                location,
+                total_cash,
+                events_list: Default::default(),
+            }
+        }
+    }
+
+    impl From<Atm> for Model {
+        fn from(value: Atm) -> Self {
+            let Atm {
+                id,
+                location,
+                total_cash,
+                events_list: _,
+            } = value;
+            Self {
+                id,
+                location,
+                total_cash,
+            }
+        }
     }
 }

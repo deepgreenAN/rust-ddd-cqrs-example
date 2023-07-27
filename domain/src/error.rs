@@ -12,6 +12,9 @@ pub enum DomainError {
     /// BankAccountに関するエラー．BankAccountに関するロジックで起こる
     #[error("DomainError::BankAccountError: {0}")]
     BankAccountError(#[from] BankAccountError),
+    /// Atmに関するエラー．Atmに関するロジック
+    #[error("DomainError::AtmError: {0}")]
+    AtmError(#[from] AtmError),
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -56,4 +59,19 @@ BankAccountError::WithdrawExceedBalanceError: Attempts to withdraw amounts {amou
 BankAccountError::CheckExceedBalanceError: Attempts to write check amounts {amount} in excess of the deposit balance {balance}.
     "#)]
     CheckExceedBalanceError { amount: f64, balance: f64 },
+}
+
+// -------------------------------------------------------------------------------------------------
+// AtmError
+
+/// Atmに関するエラー
+#[derive(thiserror::Error, Debug, Clone, Serialize, Deserialize)]
+pub enum AtmError {
+    #[error(r#"
+AtmError::CannotWithdrawError: Total cash {total_cash} in Atm is less than withdraw amount {withdraw_amount}.
+    "#)]
+    CannotWithdrawError {
+        total_cash: f64,
+        withdraw_amount: f64,
+    },
 }

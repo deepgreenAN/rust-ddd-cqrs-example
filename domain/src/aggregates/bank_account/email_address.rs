@@ -34,3 +34,57 @@ impl Debug for EmailAddress {
             .finish()
     }
 }
+
+/// sea-ormのトレイトに関する部分(deriveマクロにできる)
+#[cfg(feature = "server")]
+mod sea_orm {
+    use super::EmailAddress;
+
+    use sea_orm::{TryGetable, Value};
+    use sea_query::{value::Nullable, ValueType};
+
+    impl From<EmailAddress> for Value {
+        fn from(value: EmailAddress) -> Self {
+            Value::String(Some(Box::new(value.into())))
+        }
+    }
+
+    impl TryGetable for EmailAddress {
+        fn try_get_by<I: sea_orm::ColIdx>(
+            res: &sea_orm::QueryResult,
+            index: I,
+        ) -> Result<Self, sea_orm::TryGetError> {
+            let email_address_str: String = res.try_get_by(index)?;
+
+            Ok(TryInto::<EmailAddress>::try_into(email_address_str)
+                .map_err(|e| sea_orm::DbErr::Custom(e.to_string()))?)
+        }
+    }
+
+    impl ValueType for EmailAddress {
+        fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+            match v {
+                Value::String(Some(email_address)) => {
+                    TryInto::<EmailAddress>::try_into(*email_address)
+                        .map_err(|_| sea_query::ValueTypeErr)
+                }
+                _ => Err(sea_query::ValueTypeErr),
+            }
+        }
+        fn type_name() -> String {
+            <String as ValueType>::type_name()
+        }
+        fn array_type() -> sea_query::ArrayType {
+            <String as ValueType>::array_type()
+        }
+        fn column_type() -> sea_query::ColumnType {
+            <String as ValueType>::column_type()
+        }
+    }
+
+    impl Nullable for EmailAddress {
+        fn null() -> Value {
+            <String as Nullable>::null()
+        }
+    }
+}

@@ -152,3 +152,76 @@ impl Aggregate for BankAccount {
         &mut self.events_list
     }
 }
+
+// -------------------------------------------------------------------------------------------------
+// sea_orm用Model
+
+#[cfg(feature = "server")]
+pub mod orm {
+    use super::*;
+    use sea_orm::entity::prelude::*;
+
+    /// BankAccountに対するORMモデル．
+    #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+    #[sea_orm(table_name = "bank_account")]
+    pub struct Model {
+        /// id
+        #[sea_orm(primary_key)]
+        id: BankAccountId,
+        /// 口座が有効かどうか
+        opened: bool,
+        /// 残高
+        balance: f64,
+        /// メールアドレス
+        email_address: EmailAddress,
+        /// 口座名
+        account_name: AccountName,
+    }
+
+    #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
+    pub enum Relation {}
+
+    impl ActiveModelBehavior for ActiveModel {}
+
+    impl From<Model> for BankAccount {
+        fn from(value: Model) -> Self {
+            let Model {
+                id,
+                opened,
+                balance,
+                email_address,
+                account_name,
+            } = value;
+
+            Self {
+                id,
+                opened,
+                balance,
+                email_address,
+                account_name,
+                events_list: Default::default(),
+            }
+        }
+    }
+
+    impl From<BankAccount> for Model {
+        fn from(value: BankAccount) -> Self {
+            let BankAccount {
+                id,
+                opened,
+                balance,
+                email_address,
+                account_name,
+                events_list: _,
+            } = value;
+
+            Self {
+                id,
+                opened,
+                balance,
+                email_address,
+                account_name,
+            }
+        }
+    }
+}
