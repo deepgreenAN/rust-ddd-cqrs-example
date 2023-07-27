@@ -2,6 +2,7 @@ pub mod aggregates;
 pub mod commands;
 pub mod events;
 pub mod global;
+pub mod repositories;
 pub mod services;
 
 mod error;
