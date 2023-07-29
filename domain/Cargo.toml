@@ -5,7 +5,7 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
-server = ["dep:async-trait", "dep:sea-orm", "dep:sea-query"]
+server = ["dep:async-trait", "dep:sea-orm", "dep:sea-query", "dep:event_bus"]
 
 [dependencies]
 ddd_cqrs_core = { path = "../ddd_cqrs_core"}
@@ -16,5 +16,6 @@ email_address = "0.2.4"
 
 # 以下はオプション
 async-trait = { version = "^0.1", optional = true}
-sea-orm = { version = "^0.11", optional = true, features = ["with-uuid"]}
+sea-orm = { version = "0.11.3", optional = true, features = ["with-uuid"]}
 sea-query = { version = "0", optional = true}  # sea-ormのバージョンに合わせる
+event_bus = { path = "../event_bus", optional = true}

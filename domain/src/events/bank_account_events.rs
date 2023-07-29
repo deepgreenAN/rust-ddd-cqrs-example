@@ -11,13 +11,18 @@ pub struct AccountOpenedEvent {
     pub email_address: EmailAddress,
 }
 
+impl event_bus::Event for AccountOpenedEvent {}
+
 /// 預金する時にレイズされるイベント
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CustomerDepositedMoneyEvent {
     pub account_id: BankAccountId,
     pub amount: f64,
     pub balance: f64,
+    pub atm_id: AtmId,
 }
+
+impl event_bus::Event for CustomerDepositedMoneyEvent {}
 
 /// 引き出した時にレイズされるイベント
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -28,6 +33,8 @@ pub struct CustomerWithdrewCashEvent {
     pub atm_id: AtmId,
 }
 
+impl event_bus::Event for CustomerWithdrewCashEvent {}
+
 /// 小切手を発行したときにレイズされるイベント
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct CustomerWroteCheckEvent {
@@ -37,6 +44,8 @@ pub struct CustomerWroteCheckEvent {
     pub amount: f64,
     pub balance: f64,
 }
+
+impl event_bus::Event for CustomerWroteCheckEvent {}
 
 /// BankAccountに関するイベント全体
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]

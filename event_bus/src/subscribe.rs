@@ -12,8 +12,12 @@ use async_trait::async_trait;
 #[async_trait]
 pub trait Subscribe: Send + Sync {
     type InputEvent: Event;
+    type Error: std::error::Error;
 
-    async fn handle_event<'event>(&self, event: &'event Self::InputEvent);
+    async fn handle_event<'event>(
+        &self,
+        event: &'event Self::InputEvent,
+    ) -> Result<(), Self::Error>;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -21,18 +25,24 @@ pub trait Subscribe: Send + Sync {
 
 /// 関数をSubscribeを実装した型にする
 /// Pin<Box<dyn Future>>をeventと同じライフタイムにするため高階トレイト境界を使っている
-pub(crate) struct AsyncFuncSubscriber<E: Event> {
+pub(crate) struct AsyncFuncSubscriber<Ev: Event, Er: std::error::Error> {
     inner_func: Box<
-        dyn for<'event> Fn(&'event E) -> Pin<Box<dyn Future<Output = ()> + Send + 'event>>
+        dyn for<'event> Fn(
+                &'event Ev,
+            )
+                -> Pin<Box<dyn Future<Output = Result<(), Er>> + Send + 'event>>
             + Send
             + Sync,
     >,
 }
 
-impl<E: Event> AsyncFuncSubscriber<E> {
+impl<Ev: Event, Er: std::error::Error> AsyncFuncSubscriber<Ev, Er> {
     pub(crate) fn from_pinned_fn<F>(func: F) -> Self
     where
-        F: for<'event> Fn(&'event E) -> Pin<Box<dyn Future<Output = ()> + Send + 'event>>
+        F: for<'event> Fn(
+                &'event Ev,
+            )
+                -> Pin<Box<dyn Future<Output = Result<(), Er>> + Send + 'event>>
             + Send
             + Sync
             + 'static,
@@ -41,10 +51,10 @@ impl<E: Event> AsyncFuncSubscriber<E> {
             inner_func: Box::new(func)
                 as Box<
                     dyn for<'event> Fn(
-                            &'event E,
-                        )
-                            -> Pin<Box<dyn Future<Output = ()> + Send + 'event>>
-                        + Send
+                            &'event Ev,
+                        ) -> Pin<
+                            Box<dyn Future<Output = Result<(), Er>> + Send + 'event>,
+                        > + Send
                         + Sync,
                 >,
         }
@@ -52,9 +62,13 @@ impl<E: Event> AsyncFuncSubscriber<E> {
 }
 
 #[async_trait]
-impl<E: Event> Subscribe for AsyncFuncSubscriber<E> {
-    type InputEvent = E;
-    async fn handle_event<'event>(&self, event: &'event Self::InputEvent) {
-        (self.inner_func)(event).await;
+impl<Ev: Event, Er: std::error::Error> Subscribe for AsyncFuncSubscriber<Ev, Er> {
+    type InputEvent = Ev;
+    type Error = Er;
+    async fn handle_event<'event>(
+        &self,
+        event: &'event Self::InputEvent,
+    ) -> Result<(), Self::Error> {
+        (self.inner_func)(event).await
     }
 }

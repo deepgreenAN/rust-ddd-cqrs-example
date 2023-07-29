@@ -64,9 +64,6 @@ impl BankAccount {
             events_list: DomainEventList::new(),
         })
     }
-    pub fn id(&self) -> BankAccountId {
-        self.id
-    }
     pub fn opened(&self) -> bool {
         self.opened
     }
@@ -145,6 +142,10 @@ impl BankAccount {
 
 impl Aggregate for BankAccount {
     type Event = BankAccountEvent;
+    type IntoId = BankAccountId;
+    fn id(&self) -> Self::IntoId {
+        self.id
+    }
     fn domain_events(&self) -> &DomainEventList<Self::Event> {
         &self.events_list
     }

@@ -1,0 +1,16 @@
+[package]
+name = "serverside"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ddd_cqrs_core = { path = "../../ddd_cqrs_core"}
+common = { path = "../common", features = ["server"]}
+domain = { path = "../../domain", features = ["server"]}
+infrastructure = { path = "../../infrastructure" }
+async-trait = "^0.1"
+event_bus = { path = "../../event_bus"}
+tracing = "^0.1"
+sea-orm = { version = "0.11.3", features = ["with-uuid"]}

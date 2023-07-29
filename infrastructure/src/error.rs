@@ -28,3 +28,14 @@ impl From<sea_orm::DbErr> for InfraError {
         }
     }
 }
+
+impl From<sea_orm::TransactionError<InfraError>> for InfraError {
+    fn from(value: sea_orm::TransactionError<InfraError>) -> Self {
+        use sea_orm::TransactionError;
+
+        match value {
+            TransactionError::Connection(e) => e.into(),
+            TransactionError::Transaction(infra_e) => infra_e,
+        }
+    }
+}

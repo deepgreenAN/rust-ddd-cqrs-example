@@ -1,29 +1,27 @@
 use super::CommandId;
 use crate::aggregates::atm::AtmId;
-use crate::aggregates::bank_account::{AccountName, BankAccountId};
+use crate::aggregates::bank_account::{AccountName, BankAccountId, EmailAddress};
 
 use serde::{Deserialize, Serialize};
 
 /// アカウント開設のコマンド
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct OpenAccountCommand {
-    pub command_id: CommandId,
-    pub account_id: BankAccountId,
     pub account_name: AccountName,
+    pub email_address: EmailAddress,
 }
 
 /// 預金するコマンド
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct DepositMoneyCommand {
-    pub command_id: CommandId,
     pub account_id: BankAccountId,
     pub amount: f64,
+    pub atm_id: AtmId,
 }
 
 /// 引き出しを行うコマンド
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WithdrawMoneyCommand {
-    pub command_id: CommandId,
     pub account_id: BankAccountId,
     pub amount: f64,
     pub atm_id: AtmId,
@@ -32,7 +30,6 @@ pub struct WithdrawMoneyCommand {
 /// 小切手の発行を行うコマンド
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WriteCheckCommand {
-    pub command_id: CommandId,
     pub account_id: BankAccountId,
     pub amount: f64,
     /// 外部マイクロサービスについての処理であるため，プリミティブな型
@@ -45,15 +42,13 @@ pub struct WriteCheckCommand {
 /// アカウント開設のコマンド(参照)
 #[derive(Debug, Clone, Serialize)]
 pub struct OpenAccountRefCommand<'a> {
-    pub command_id: CommandId,
-    pub account_id: BankAccountId,
     pub account_name: &'a AccountName,
+    pub email_address: &'a EmailAddress,
 }
 
 /// 小切手の発行を行うコマンド(参照)
 #[derive(Debug, Clone, Serialize)]
 pub struct WriteCheckRefCommand<'a> {
-    pub command_id: CommandId,
     pub account_id: BankAccountId,
     pub amount: f64,
     /// 外部マイクロサービスについての処理であるため，プリミティブな型
@@ -67,20 +62,23 @@ pub struct WriteCheckRefCommand<'a> {
 #[cfg(feature = "server")]
 #[derive(Debug, Clone, Deserialize)]
 pub enum BankAccountCommand {
-    OpenAccountCommand(OpenAccountCommand),
-    DepositMoneyCommand(DepositMoneyCommand),
-    WithdrawMoneyCommand(WithdrawMoneyCommand),
-    WriteCheckCommand(WriteCheckCommand),
+    OpenAccountCommand(OpenAccountCommand, CommandId),
+    DepositMoneyCommand(DepositMoneyCommand, CommandId),
+    WithdrawMoneyCommand(WithdrawMoneyCommand, CommandId),
+    WriteCheckCommand(WriteCheckCommand, CommandId),
 }
 
-// // impl Fromを生成
-// crate::generate_enum_from!(
-//     BankAccountCommand,
-//     OpenAccountCommand,
-//     DepositMoneyCommand,
-//     WithdrawMoneyCommand,
-//     WriteCheckCommand
-// );
+#[cfg(feature = "server")]
+impl BankAccountCommand {
+    pub fn id(&self) -> CommandId {
+        match self {
+            Self::OpenAccountCommand(_, id) => *id,
+            Self::DepositMoneyCommand(_, id) => *id,
+            Self::WithdrawMoneyCommand(_, id) => *id,
+            Self::WriteCheckCommand(_, id) => *id,
+        }
+    }
+}
 
 // -------------------------------------------------------------------------------------------------
 // BankAccountRefCommand
@@ -89,8 +87,8 @@ pub enum BankAccountCommand {
 #[cfg(not(feature = "server"))]
 #[derive(Debug, Clone, Serialize)]
 pub enum BankAccountRefCommand<'a> {
-    OpenAccountCommand(OpenAccountRefCommand<'a>),
-    DepositMoneyCommand(DepositMoneyCommand),
-    WithdrawMoneyCommand(WithdrawMoneyCommand),
-    WriteCheckCommand(WriteCheckRefCommand<'a>),
+    OpenAccountCommand(OpenAccountRefCommand<'a>, CommandId),
+    DepositMoneyCommand(DepositMoneyCommand, CommandId),
+    WithdrawMoneyCommand(WithdrawMoneyCommand, CommandId),
+    WriteCheckCommand(WriteCheckRefCommand<'a>, CommandId),
 }

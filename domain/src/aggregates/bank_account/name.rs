@@ -54,8 +54,8 @@ impl TryFrom<String> for AccountName {
 mod sea_orm {
     use super::AccountName;
 
-    use sea_orm::{TryGetable, Value};
-    use sea_query::{value::Nullable, ValueType};
+    use sea_orm::TryGetable;
+    use sea_query::{value::Nullable, Value, ValueType};
 
     impl From<AccountName> for Value {
         fn from(value: AccountName) -> Self {

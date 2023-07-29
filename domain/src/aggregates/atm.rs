@@ -47,9 +47,6 @@ impl Atm {
             events_list: DomainEventList::new(),
         })
     }
-    pub fn id(&self) -> AtmId {
-        self.id
-    }
     pub fn location(&self) -> &AtmLocation {
         &self.location
     }
@@ -81,6 +78,10 @@ impl Atm {
 
 impl Aggregate for Atm {
     type Event = AtmEvents;
+    type IntoId = AtmId;
+    fn id(&self) -> Self::IntoId {
+        self.id
+    }
     fn domain_events(&self) -> &DomainEventList<Self::Event> {
         &self.events_list
     }
