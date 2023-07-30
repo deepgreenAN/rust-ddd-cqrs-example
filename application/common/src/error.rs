@@ -9,7 +9,7 @@ pub enum ApplicationError {
     #[error("ApplicationError::DomainError: {0}")]
     DomainError(#[from] DomainError),
 
-    /// レコードが見つからないときのエラー
+    /// レコードが見つからないときのエラー(リポジトリ・コマンド内でのみ)
     #[error("ApplicationError::RecordNotFoundError: {0}")]
     RecordNotFound(String),
 
@@ -28,6 +28,10 @@ pub enum ApplicationError {
     /// リクエストに関するエラー
     #[error("ApplicationError::FetchError: {0}")]
     FetchError(String),
+
+    /// QueryResultに関するエラー．これが返ったとき、おそらくバグを含んでいる．
+    #[error("ApplicationError::QueryResultError: {0}")]
+    QueryResultError(String),
 }
 
 #[cfg(feature = "server")]

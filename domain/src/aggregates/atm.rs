@@ -93,7 +93,7 @@ impl Aggregate for Atm {
 // -------------------------------------------------------------------------------------------------
 // sea_orm用Model
 
-#[cfg(feature = "server")]
+#[cfg(feature = "orm")]
 pub mod orm {
     use super::*;
     use sea_orm::entity::prelude::*;

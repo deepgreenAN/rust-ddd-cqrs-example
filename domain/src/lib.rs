@@ -1,5 +1,4 @@
 pub mod aggregates;
-pub mod commands;
 pub mod global;
 
 #[cfg(feature = "server")]
@@ -16,3 +15,4 @@ mod id;
 mod macros;
 
 pub use error::DomainError;
+pub use id::Id;

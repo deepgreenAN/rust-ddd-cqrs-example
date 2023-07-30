@@ -30,7 +30,7 @@ impl From<AtmLocation> for String {
 }
 
 /// sea-ormのトレイトに関する部分(deriveマクロにできる)
-#[cfg(feature = "server")]
+#[cfg(feature = "orm")]
 mod sea_orm {
     use super::AtmLocation;
 

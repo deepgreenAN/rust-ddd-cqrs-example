@@ -1,6 +1,6 @@
 use super::CommandId;
-use crate::aggregates::atm::AtmId;
-use crate::aggregates::bank_account::{AccountName, BankAccountId, EmailAddress};
+use domain::aggregates::atm::AtmId;
+use domain::aggregates::bank_account::{AccountName, BankAccountId, EmailAddress};
 
 use serde::{Deserialize, Serialize};
 
@@ -66,18 +66,6 @@ pub enum BankAccountCommand {
     DepositMoneyCommand(DepositMoneyCommand, CommandId),
     WithdrawMoneyCommand(WithdrawMoneyCommand, CommandId),
     WriteCheckCommand(WriteCheckCommand, CommandId),
-}
-
-#[cfg(feature = "server")]
-impl BankAccountCommand {
-    pub fn id(&self) -> CommandId {
-        match self {
-            Self::OpenAccountCommand(_, id) => *id,
-            Self::DepositMoneyCommand(_, id) => *id,
-            Self::WithdrawMoneyCommand(_, id) => *id,
-            Self::WriteCheckCommand(_, id) => *id,
-        }
-    }
 }
 
 // -------------------------------------------------------------------------------------------------

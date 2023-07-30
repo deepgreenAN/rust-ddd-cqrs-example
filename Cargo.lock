@@ -541,6 +541,7 @@ dependencies = [
  "domain",
  "infrastructure",
  "reqwest",
+ "sea-orm",
  "serde",
  "thiserror",
 ]
@@ -680,7 +681,6 @@ version = "0.1.0"
 dependencies = [
  "async-global-executor",
  "async-trait",
- "tracing",
 ]
 
 [[package]]
@@ -1168,6 +1168,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b06a4cde4c0f271a446782e3eff8de789548ce57dbc8eca9292c27f4a42004b4"
 dependencies = [
  "value-bag",
+]
+
+[[package]]
+name = "lru"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eedb2bdbad7e0634f83989bf596f497b070130daaa398ab22d84c39e266deec5"
+dependencies = [
+ "hashbrown 0.14.0",
 ]
 
 [[package]]
@@ -2062,11 +2071,13 @@ name = "serverside"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "axum",
  "common",
  "ddd_cqrs_core",
  "domain",
  "event_bus",
  "infrastructure",
+ "lru",
  "sea-orm",
  "tracing",
 ]

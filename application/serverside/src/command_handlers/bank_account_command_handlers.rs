@@ -1,18 +1,23 @@
+use crate::event_handlers::bank_account_event_handlers::BankAccountEventBus;
+
 use ddd_cqrs_core::{Aggregate, HandleCommand};
 
-use common::ApplicationError;
-use domain::aggregates::BankAccount;
-use domain::commands::bank_account_commands::BankAccountCommand;
-use domain::commands::bank_account_commands::{
+use common::commands::bank_account_commands::BankAccountCommand;
+use common::commands::bank_account_commands::{
     DepositMoneyCommand, OpenAccountCommand, WithdrawMoneyCommand, WriteCheckCommand,
 };
+use common::commands::CommandId;
+use common::ApplicationError;
+use domain::aggregates::BankAccount;
 use domain::repositories::{BankAccountRepository, Transaction};
 use infrastructure::InfraError;
+
+use lru::LruCache;
+use std::sync::Mutex;
 
 // -------------------------------------------------------------------------------------------------
 // OpenAccountCommandHandler
 
-#[derive(Clone)]
 pub struct OpenAccountCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -25,7 +30,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for OpenAccount
     type Error = ApplicationError;
 
     async fn handle_command(
-        &mut self,
+        &self,
         command: Self::Command,
     ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
         let transaction = R::Transaction::begin(&self.pool).await?;
@@ -51,7 +56,6 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for OpenAccount
 // -------------------------------------------------------------------------------------------------
 // DepositMoneyCommandHandler
 
-#[derive(Clone)]
 pub struct DepositMoneyCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -64,7 +68,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for DepositMone
     type Error = ApplicationError;
 
     async fn handle_command(
-        &mut self,
+        &self,
         command: Self::Command,
     ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
         use domain::events::bank_account_events::CustomerDepositedMoneyEvent;
@@ -104,7 +108,6 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for DepositMone
 // -------------------------------------------------------------------------------------------------
 // WithdrawMoneyCommand
 
-#[derive(Clone)]
 pub struct WithdrawMoneyCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -119,7 +122,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand
     type Error = ApplicationError;
 
     async fn handle_command(
-        &mut self,
+        &self,
         command: Self::Command,
     ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
         use domain::events::bank_account_events::CustomerWithdrewCashEvent;
@@ -150,7 +153,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand
         let events = bank_account.domain_events_mut().take();
         self.repo.edit(bank_account, Some(&transaction)).await?;
 
-        transaction.commit();
+        transaction.commit().await?;
 
         Ok(events)
     }
@@ -159,7 +162,6 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand
 // -------------------------------------------------------------------------------------------------
 // WriteCheckCommandHandler
 
-#[derive(Clone)]
 pub struct WriteCheckCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -172,7 +174,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for WriteCheckC
     type Error = ApplicationError;
 
     async fn handle_command(
-        &mut self,
+        &self,
         command: Self::Command,
     ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
         let transaction = R::Transaction::begin(&self.pool).await?;
@@ -192,5 +194,115 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for WriteCheckC
         transaction.commit().await?;
 
         Ok(events)
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// BankAccountに関する統合コマンド
+
+/// BankAccountに関する統合コマンド．コマンドを増やした場合のみ変更されるため，具象型とする
+pub struct BankAccountCommandHandler {
+    pub deposit_money_handler: Box<
+        dyn HandleCommand<
+            Command = DepositMoneyCommand,
+            Aggregate = BankAccount,
+            Error = ApplicationError,
+        >,
+    >,
+    pub open_account_handler: Box<
+        dyn HandleCommand<
+            Command = OpenAccountCommand,
+            Aggregate = BankAccount,
+            Error = ApplicationError,
+        >,
+    >,
+    pub withdraw_money_handler: Box<
+        dyn HandleCommand<
+            Command = WithdrawMoneyCommand,
+            Aggregate = BankAccount,
+            Error = ApplicationError,
+        >,
+    >,
+    pub write_check_handler: Box<
+        dyn HandleCommand<
+            Command = WriteCheckCommand,
+            Aggregate = BankAccount,
+            Error = ApplicationError,
+        >,
+    >,
+    /// BankAccountEventに関するイベントバス
+    pub event_bus: BankAccountEventBus,
+    /// リトライなどにより重複したコマンドじゃないかどうかを判定するキャッシュ．場合によってはリポジトリとする．
+    pub command_id_cache: Mutex<LruCache<CommandId, ()>>,
+}
+
+impl BankAccountCommandHandler {
+    fn check_command_duplicate(&self, id: CommandId) -> bool {
+        let mut cache_lock = self.command_id_cache.lock().unwrap();
+        if cache_lock.contains(&id) {
+            true
+        } else {
+            cache_lock.put(id, ());
+            false
+        }
+    }
+
+    pub async fn handle_command(
+        &self,
+        command: BankAccountCommand,
+    ) -> Result<(), ApplicationError> {
+        let events = match command {
+            BankAccountCommand::OpenAccountCommand(cmd, id) => {
+                if !self.check_command_duplicate(id) {
+                    self.open_account_handler.handle_command(cmd).await?
+                } else {
+                    if self.open_account_handler.allow_duplicate() {
+                        self.open_account_handler.handle_command(cmd).await?
+                    } else {
+                        Vec::new()
+                    }
+                }
+            }
+            BankAccountCommand::DepositMoneyCommand(cmd, id) => {
+                if !self.check_command_duplicate(id) {
+                    self.deposit_money_handler.handle_command(cmd).await?
+                } else {
+                    if self.deposit_money_handler.allow_duplicate() {
+                        self.deposit_money_handler.handle_command(cmd).await?
+                    } else {
+                        Vec::new()
+                    }
+                }
+            }
+            BankAccountCommand::WithdrawMoneyCommand(cmd, id) => {
+                if !self.check_command_duplicate(id) {
+                    self.withdraw_money_handler.handle_command(cmd).await?
+                } else {
+                    if self.withdraw_money_handler.allow_duplicate() {
+                        self.withdraw_money_handler.handle_command(cmd).await?
+                    } else {
+                        Vec::new()
+                    }
+                }
+            }
+            BankAccountCommand::WriteCheckCommand(cmd, id) => {
+                if !self.check_command_duplicate(id) {
+                    self.write_check_handler.handle_command(cmd).await?
+                } else {
+                    if self.write_check_handler.allow_duplicate() {
+                        self.write_check_handler.handle_command(cmd).await?
+                    } else {
+                        Vec::new()
+                    }
+                }
+            }
+        };
+
+        // イベントのディスパッチ
+        for event in events.into_iter() {
+            self.event_bus.dispatch_event(event);
+        }
+
+        Ok(())
     }
 }

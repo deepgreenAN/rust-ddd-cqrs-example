@@ -9,7 +9,7 @@ pub trait HandleCommand {
 
     /// コマンドハンドラの実装部分
     async fn handle_command(
-        &mut self,
+        &self,
         command: Self::Command,
     ) -> Result<Vec<<Self::Aggregate as Aggregate>::Event>, Self::Error>;
 

@@ -10,9 +10,11 @@ server = ["dep:infrastructure", "dep:axum"]
 frontend = ["dep:reqwest"]
 
 [dependencies]
-domain = { path = "../../domain"}
+domain = { path = "../../domain", features = ["orm"]}
 thiserror = "^1.0"
 serde = { version = "^1.0", features = ["derive"]}
+sea-orm = { version = "0.11.3", default-features = false, features = ["with-uuid", "macros"]}
+
 
 # 以下はoptional
 infrastructure = { path = "../../infrastructure", optional = true }

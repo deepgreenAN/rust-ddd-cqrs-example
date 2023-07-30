@@ -5,17 +5,16 @@ use std::pin::Pin;
 use std::sync::Arc;
 
 use async_global_executor::Task;
-use tracing::error;
 
 // -------------------------------------------------------------------------------------------------
 // EventBs
 
 /// イベントバス．
-pub struct EventBus<Ev: Event, Er: std::error::Error> {
+pub struct EventBus<Ev: Event, Er: std::error::Error + Send> {
     subscribers: Vec<Arc<dyn Subscribe<InputEvent = Ev, Error = Er>>>,
 }
 
-impl<Ev: Event, Er: std::error::Error + 'static> EventBus<Ev, Er> {
+impl<Ev: Event, Er: std::error::Error + Send + 'static> EventBus<Ev, Er> {
     pub const fn new() -> Self {
         Self {
             subscribers: Vec::new(),
@@ -42,7 +41,7 @@ impl<Ev: Event, Er: std::error::Error + 'static> EventBus<Ev, Er> {
         self.subscribe(crate::subscribe::AsyncFuncSubscriber::from_pinned_fn(func));
     }
     /// イベントをサブスクライバーに通知して非同期実行しハンドルを返す．
-    pub fn dispatch_event(&mut self, event: Ev) -> Vec<Task<()>> {
+    pub fn dispatch_event(&self, event: Ev) -> Vec<Task<Result<(), Er>>> {
         let mut tasks = Vec::new();
         let event = Arc::new(event);
 
@@ -50,11 +49,8 @@ impl<Ev: Event, Er: std::error::Error + 'static> EventBus<Ev, Er> {
             let subscriber = Arc::clone(subscriber);
             let event = Arc::clone(&event);
 
-            let task = async_global_executor::spawn(async move {
-                if let Err(e) = subscriber.handle_event(&event).await {
-                    error!("Error in EventBus: {}", e);
-                }
-            });
+            let task =
+                async_global_executor::spawn(async move { subscriber.handle_event(&event).await });
 
             tasks.push(task);
         }
