@@ -34,12 +34,12 @@ impl From<AtmLocation> for String {
 mod sea_orm {
     use super::AtmLocation;
 
-    use sea_orm::{TryGetable, Value};
+    use sea_orm::TryGetable;
     use sea_query::{value::Nullable, ValueType};
 
-    impl From<AtmLocation> for Value {
+    impl From<AtmLocation> for sea_query::Value {
         fn from(value: AtmLocation) -> Self {
-            Value::String(Some(Box::new(value.into())))
+            sea_query::Value::String(Some(Box::new(value.into())))
         }
     }
 
@@ -54,9 +54,9 @@ mod sea_orm {
     }
 
     impl ValueType for AtmLocation {
-        fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
             match v {
-                Value::String(Some(atm_location)) => Ok((*atm_location).into()),
+                sea_query::Value::String(Some(atm_location)) => Ok((*atm_location).into()),
                 _ => Err(sea_query::ValueTypeErr),
             }
         }
@@ -72,7 +72,7 @@ mod sea_orm {
     }
 
     impl Nullable for AtmLocation {
-        fn null() -> Value {
+        fn null() -> sea_query::Value {
             <String as Nullable>::null()
         }
     }

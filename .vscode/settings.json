@@ -1,6 +1,4 @@
 {
     "rust-analyzer.cargo.features": [
-        "server",
-        "frontend"
     ]
 }

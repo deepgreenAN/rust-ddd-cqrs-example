@@ -72,7 +72,7 @@ pub enum BankAccountCommand {
 // BankAccountRefCommand
 
 /// bank_accountアグリゲイトに関わる参照コマンド全体(フロントエンド側で利用)
-#[cfg(all(feature = "frontend", not(feature = "server")))]
+#[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
 pub enum BankAccountCommand<'a> {
     OpenAccountCommand(OpenAccountRefCommand<'a>, CommandId),

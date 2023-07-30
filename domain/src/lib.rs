@@ -1,13 +1,8 @@
 pub mod aggregates;
+pub mod events;
 
 #[cfg(feature = "server")]
 pub mod repositories;
-
-#[cfg(feature = "server")]
-pub mod services;
-
-#[cfg(feature = "server")]
-pub mod events;
 
 mod error;
 mod id;

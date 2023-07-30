@@ -14,5 +14,7 @@ members = [
     "migration", 
     "infrastructure",
     "application/serverside",
-    "application/common"
+    "application/common",
+    "application/frontend"
 ]
+exclude = []

@@ -12,6 +12,7 @@ pub struct AccountOpenedEvent {
     pub email_address: EmailAddress,
 }
 
+#[cfg(feature = "server")]
 impl event_bus::Event for AccountOpenedEvent {}
 
 /// 預金する時にレイズされるイベント
@@ -23,6 +24,7 @@ pub struct CustomerDepositedMoneyEvent {
     pub atm_id: AtmId,
 }
 
+#[cfg(feature = "server")]
 impl event_bus::Event for CustomerDepositedMoneyEvent {}
 
 /// 引き出した時にレイズされるイベント
@@ -34,6 +36,7 @@ pub struct CustomerWithdrewCashEvent {
     pub atm_id: AtmId,
 }
 
+#[cfg(feature = "server")]
 impl event_bus::Event for CustomerWithdrewCashEvent {}
 
 /// 小切手を発行したときにレイズされるイベント
@@ -46,6 +49,7 @@ pub struct CustomerWroteCheckEvent {
     pub balance: f64,
 }
 
+#[cfg(feature = "server")]
 impl event_bus::Event for CustomerWroteCheckEvent {}
 
 /// BankAccountに関するイベント全体

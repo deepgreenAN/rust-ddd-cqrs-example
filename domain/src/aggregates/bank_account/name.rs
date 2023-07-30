@@ -55,11 +55,11 @@ mod sea_orm {
     use super::AccountName;
 
     use sea_orm::TryGetable;
-    use sea_query::{value::Nullable, Value, ValueType};
+    use sea_query::{value::Nullable, ValueType};
 
-    impl From<AccountName> for Value {
+    impl From<AccountName> for sea_query::Value {
         fn from(value: AccountName) -> Self {
-            Value::String(Some(Box::new(value.into())))
+            sea_query::Value::String(Some(Box::new(value.into())))
         }
     }
 
@@ -76,9 +76,9 @@ mod sea_orm {
     }
 
     impl ValueType for AccountName {
-        fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
             match v {
-                Value::String(Some(account_name_str)) => {
+                sea_query::Value::String(Some(account_name_str)) => {
                     TryInto::<AccountName>::try_into(*account_name_str)
                         .map_err(|_| sea_query::ValueTypeErr)
                 }
@@ -97,7 +97,7 @@ mod sea_orm {
     }
 
     impl Nullable for AccountName {
-        fn null() -> Value {
+        fn null() -> sea_query::Value {
             <String as Nullable>::null()
         }
     }

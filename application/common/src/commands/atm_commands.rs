@@ -32,7 +32,8 @@ pub enum AtmCommand {
 
 // -------------------------------------------------------------------------------------------------
 // AtmRefCommand
-#[cfg(all(feature = "frontend", not(feature = "server")))]
+
+#[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
 pub enum AtmCommand<'a> {
     RegisterAtmCommand(RegisterAtmRefCommand<'a>, CommandId),

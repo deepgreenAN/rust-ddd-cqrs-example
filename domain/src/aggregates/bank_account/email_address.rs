@@ -40,12 +40,12 @@ impl Debug for EmailAddress {
 mod sea_orm {
     use super::EmailAddress;
 
-    use sea_orm::{TryGetable, Value};
+    use sea_orm::TryGetable;
     use sea_query::{value::Nullable, ValueType};
 
-    impl From<EmailAddress> for Value {
+    impl From<EmailAddress> for sea_query::Value {
         fn from(value: EmailAddress) -> Self {
-            Value::String(Some(Box::new(value.into())))
+            sea_query::Value::String(Some(Box::new(value.into())))
         }
     }
 
@@ -62,9 +62,9 @@ mod sea_orm {
     }
 
     impl ValueType for EmailAddress {
-        fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
             match v {
-                Value::String(Some(email_address)) => {
+                sea_query::Value::String(Some(email_address)) => {
                     TryInto::<EmailAddress>::try_into(*email_address)
                         .map_err(|_| sea_query::ValueTypeErr)
                 }
@@ -83,7 +83,7 @@ mod sea_orm {
     }
 
     impl Nullable for EmailAddress {
-        fn null() -> Value {
+        fn null() -> sea_query::Value {
             <String as Nullable>::null()
         }
     }

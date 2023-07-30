@@ -9,7 +9,7 @@ edition = "2021"
 domain = { path = "../domain", features = ["server"]}
 async-trait = "^0.1"
 sea-orm = { version = "0.11.3", features = ["with-uuid"]}
-sea-query = "0"  # sea-ormのバージョンに合わせる
+sea-query = "0.28.5"  # sea-ormのバージョンに合わせる
 serde = { version = "^1.0", features = ["derive"]}
 thiserror = "^1.0"
 derive-new = "^0.5"

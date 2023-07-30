@@ -58,17 +58,17 @@ impl<T: Clone> From<Id<T>> for String {
 }
 
 /// sea-ormのトレイトに関する部分(deriveマクロにできる)
-#[cfg(feature = "server")]
+#[cfg(feature = "orm")]
 mod sea_orm {
     use super::Id;
 
-    use sea_orm::{TryFromU64, TryGetable, Value};
+    use sea_orm::{TryFromU64, TryGetable};
     use sea_query::{value::Nullable, ValueType};
     use uuid::Uuid;
 
-    impl<T: Clone> From<Id<T>> for Value {
+    impl<T: Clone> From<Id<T>> for sea_query::Value {
         fn from(value: Id<T>) -> Self {
-            Value::Uuid(Some(Box::new(value.into())))
+            sea_query::Value::Uuid(Some(Box::new(value.into())))
         }
     }
 
@@ -83,9 +83,9 @@ mod sea_orm {
     }
 
     impl<T: Clone> ValueType for Id<T> {
-        fn try_from(v: Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
             match v {
-                Value::Uuid(Some(id)) => Ok((*id).into()),
+                sea_query::Value::Uuid(Some(id)) => Ok((*id).into()),
                 _ => Err(sea_query::ValueTypeErr),
             }
         }
@@ -101,7 +101,7 @@ mod sea_orm {
     }
 
     impl<T: Clone> Nullable for Id<T> {
-        fn null() -> Value {
+        fn null() -> sea_query::Value {
             <Uuid as Nullable>::null()
         }
     }
