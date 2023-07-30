@@ -32,7 +32,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for OpenAccount
     async fn handle_command(
         &self,
         command: Self::Command,
-    ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
+    ) -> Result<Vec<<Self::Aggregate as Aggregate>::Event>, Self::Error> {
         let transaction = R::Transaction::begin(&self.pool).await?;
 
         let OpenAccountCommand {
@@ -70,7 +70,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for DepositMone
     async fn handle_command(
         &self,
         command: Self::Command,
-    ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
+    ) -> Result<Vec<<Self::Aggregate as Aggregate>::Event>, Self::Error> {
         use domain::events::bank_account_events::CustomerDepositedMoneyEvent;
 
         let transaction = R::Transaction::begin(&self.pool).await?;
@@ -124,7 +124,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand
     async fn handle_command(
         &self,
         command: Self::Command,
-    ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
+    ) -> Result<Vec<<Self::Aggregate as Aggregate>::Event>, Self::Error> {
         use domain::events::bank_account_events::CustomerWithdrewCashEvent;
 
         let transaction = R::Transaction::begin(&self.pool).await?;
@@ -176,7 +176,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for WriteCheckC
     async fn handle_command(
         &self,
         command: Self::Command,
-    ) -> Result<Vec<<BankAccount as Aggregate>::Event>, Self::Error> {
+    ) -> Result<Vec<<Self::Aggregate as Aggregate>::Event>, Self::Error> {
         let transaction = R::Transaction::begin(&self.pool).await?;
 
         let WriteCheckCommand {
@@ -200,7 +200,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for WriteCheckC
 // -------------------------------------------------------------------------------------------------
 // BankAccountに関する統合コマンド
 
-/// BankAccountに関する統合コマンド．コマンドを増やした場合のみ変更されるため，具象型とする
+/// BankAccountに関する統合コマンド．コマンドを増やした場合のみ変更されるため，具象型とする(さらにBox<dyn >はasync_traitと相性が悪い)
 pub struct BankAccountCommandHandler {
     pub deposit_money_handler: Box<
         dyn HandleCommand<

@@ -20,7 +20,7 @@ pub struct SendOpenAccountMailHandler;
 #[async_trait::async_trait]
 impl Subscribe for SendOpenAccountMailHandler {
     type InputEvent = AccountOpenedEvent;
-    type Error = ApplicationError;
+    type Output = Result<(), ApplicationError>;
     async fn handle_event<'event>(
         &self,
         event: &'event Self::InputEvent,
@@ -45,7 +45,7 @@ pub struct AtmDepositHandler<AR: AtmRepository<Error = InfraError>> {
 #[async_trait::async_trait]
 impl<AR: AtmRepository<Error = InfraError>> Subscribe for AtmDepositHandler<AR> {
     type InputEvent = CustomerDepositedMoneyEvent;
-    type Error = ApplicationError;
+    type Output = Result<(), ApplicationError>;
     async fn handle_event<'event>(
         &self,
         event: &'event Self::InputEvent,
@@ -85,7 +85,7 @@ pub struct AtmWithdrawHandler<AR: AtmRepository<Error = InfraError>> {
 #[async_trait::async_trait]
 impl<AR: AtmRepository<Error = InfraError>> Subscribe for AtmWithdrawHandler<AR> {
     type InputEvent = CustomerWithdrewCashEvent;
-    type Error = ApplicationError;
+    type Output = Result<(), ApplicationError>;
     async fn handle_event<'event>(
         &self,
         event: &'event Self::InputEvent,
@@ -122,7 +122,7 @@ pub struct ExternalWroteCheckHandler;
 #[async_trait::async_trait]
 impl Subscribe for ExternalWroteCheckHandler {
     type InputEvent = CustomerWroteCheckEvent;
-    type Error = ApplicationError;
+    type Output = Result<(), ApplicationError>;
     async fn handle_event<'event>(
         &self,
         event: &'event Self::InputEvent,
@@ -146,10 +146,12 @@ impl Subscribe for ExternalWroteCheckHandler {
 
 /// BankAccountに関するイベントバス．統合コマンドハンドラと一対一で利用し，これはイベントが追加される場合のみ変更されるかつ必ず変更しなければならいため，具象型としている．
 pub struct BankAccountEventBus {
-    pub account_open_event_bus: EventBus<AccountOpenedEvent, ApplicationError>,
-    pub customer_deposited_money_bus: EventBus<CustomerDepositedMoneyEvent, ApplicationError>,
-    pub customer_withdrew_cash_bus: EventBus<CustomerWithdrewCashEvent, ApplicationError>,
-    pub customer_wrote_check_bus: EventBus<CustomerWroteCheckEvent, ApplicationError>,
+    pub account_open_event_bus: EventBus<AccountOpenedEvent, Result<(), ApplicationError>>,
+    pub customer_deposited_money_bus:
+        EventBus<CustomerDepositedMoneyEvent, Result<(), ApplicationError>>,
+    pub customer_withdrew_cash_bus:
+        EventBus<CustomerWithdrewCashEvent, Result<(), ApplicationError>>,
+    pub customer_wrote_check_bus: EventBus<CustomerWroteCheckEvent, Result<(), ApplicationError>>,
 }
 
 impl BankAccountEventBus {

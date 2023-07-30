@@ -3,7 +3,7 @@ mod atm_location;
 use crate::error::{AtmError, DomainError};
 use crate::events::atm_events::AtmEvents;
 use crate::id::Id;
-use atm_location::AtmLocation;
+pub use atm_location::AtmLocation;
 
 use ddd_cqrs_core::{Aggregate, DomainEventList};
 

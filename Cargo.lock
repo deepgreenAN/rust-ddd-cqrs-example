@@ -2079,6 +2079,7 @@ dependencies = [
  "infrastructure",
  "lru",
  "sea-orm",
+ "serde",
  "tracing",
 ]
 

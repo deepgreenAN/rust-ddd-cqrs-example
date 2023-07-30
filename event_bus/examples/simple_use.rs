@@ -1,7 +1,5 @@
-use std::fmt::{Debug, Display};
-
 use event_bus::async_trait;
-use event_bus::{Event, EventBus, Subscribe};
+use event_bus::{Event, Subscribe};
 
 /// 気象情報を表すイベント
 #[derive(Clone)]
@@ -17,22 +15,14 @@ impl Event for Weather {}
 #[derive(Debug)]
 enum WeatherError {}
 
-impl std::error::Error for WeatherError {}
-
-impl Display for WeatherError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        <Self as Debug>::fmt(&self, f)
-    }
-}
-
 struct JpShowWeather;
 
 #[async_trait]
 impl Subscribe for JpShowWeather {
     type InputEvent = Weather;
-    type Error = WeatherError;
+    type Output = Result<(), WeatherError>;
 
-    async fn handle_event<'event>(&self, event: &'event Weather) -> Result<(), Self::Error> {
+    async fn handle_event<'event>(&self, event: &'event Weather) -> Self::Output {
         println!(
             "気温は{:>3.0}度で，気圧は{:>4.0}Hpaです．",
             event.temperature, event.pressure
@@ -53,10 +43,11 @@ async fn usa_show_weather(event: &Weather) -> Result<(), WeatherError> {
 }
 
 fn main() {
+    use event_bus::{event_bus_from_subscriber_pinned_fns, event_bus_from_subscribes, EventBus};
     use std::thread::sleep;
     use std::time::Duration;
 
-    let mut event_bus = EventBus::<Weather, WeatherError>::new();
+    let mut event_bus = EventBus::<Weather, Result<(), WeatherError>>::new();
 
     event_bus.subscribe(JpShowWeather);
     event_bus.subscribe_pinned_fn(|event| Box::pin(usa_show_weather(event)));
@@ -70,4 +61,15 @@ fn main() {
         sleep(Duration::from_millis(100));
     }
     println!("All event handler finished");
+
+    // その他の作成方法
+    let mut bus: EventBus<Weather, Result<(), WeatherError>> =
+        event_bus_from_subscribes![JpShowWeather, JpShowWeather];
+
+    let bus_2: EventBus<Weather, Result<(), WeatherError>> =
+        event_bus_from_subscriber_pinned_fns![|event| Box::pin(usa_show_weather(event)), |event| {
+            Box::pin(usa_show_weather(event))
+        }];
+
+    bus.extend(bus_2);
 }

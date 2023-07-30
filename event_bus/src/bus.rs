@@ -7,33 +7,30 @@ use std::sync::Arc;
 use async_global_executor::Task;
 
 // -------------------------------------------------------------------------------------------------
-// EventBs
+// EventBus
 
 /// イベントバス．
-pub struct EventBus<Ev: Event, Er: std::error::Error + Send> {
-    subscribers: Vec<Arc<dyn Subscribe<InputEvent = Ev, Error = Er>>>,
+pub struct EventBus<E: Event, O: Send> {
+    subscribers: Vec<Arc<dyn Subscribe<InputEvent = E, Output = O>>>,
 }
 
-impl<Ev: Event, Er: std::error::Error + Send + 'static> EventBus<Ev, Er> {
+impl<E: Event, O: Send + 'static> EventBus<E, O> {
     pub const fn new() -> Self {
         Self {
             subscribers: Vec::new(),
         }
     }
-    fn subscribe_arc(&mut self, subscriber: Arc<dyn Subscribe<InputEvent = Ev, Error = Er>>) {
+    fn subscribe_arc(&mut self, subscriber: Arc<dyn Subscribe<InputEvent = E, Output = O>>) {
         self.subscribers.push(subscriber);
     }
     /// サブスクライバーを追加する．
-    pub fn subscribe<S: Subscribe<InputEvent = Ev, Error = Er> + 'static>(
-        &mut self,
-        subscriber: S,
-    ) {
+    pub fn subscribe<S: Subscribe<InputEvent = E, Output = O> + 'static>(&mut self, subscriber: S) {
         self.subscribe_arc(Arc::new(subscriber));
     }
     /// Pin<Box<dyn Future<Output = ()>>>を返す関数をサブスクライバーとして追加する．
     pub fn subscribe_pinned_fn<F>(&mut self, func: F)
     where
-        F: for<'a> Fn(&'a Ev) -> Pin<Box<dyn Future<Output = Result<(), Er>> + Send + 'a>>
+        F: for<'a> Fn(&'a E) -> Pin<Box<dyn Future<Output = O> + Send + 'a>>
             + Send
             + Sync
             + 'static,
@@ -41,7 +38,7 @@ impl<Ev: Event, Er: std::error::Error + Send + 'static> EventBus<Ev, Er> {
         self.subscribe(crate::subscribe::AsyncFuncSubscriber::from_pinned_fn(func));
     }
     /// イベントをサブスクライバーに通知して非同期実行しハンドルを返す．
-    pub fn dispatch_event(&self, event: Ev) -> Vec<Task<Result<(), Er>>> {
+    pub fn dispatch_event(&self, event: E) -> Vec<Task<O>> {
         let mut tasks = Vec::new();
         let event = Arc::new(event);
 
@@ -57,7 +54,7 @@ impl<Ev: Event, Er: std::error::Error + Send + 'static> EventBus<Ev, Er> {
         tasks
     }
     /// EventBusのextend
-    pub fn extend(&mut self, other: EventBus<Ev, Er>) {
+    pub fn extend(&mut self, other: EventBus<E, O>) {
         let EventBus { subscribers } = other;
         self.subscribers.extend(subscribers);
     }
@@ -71,8 +68,8 @@ macro_rules! event_bus_from_subscribes {
     ($($subscriber:expr),*) => {
         {
             let mut bus = $crate::EventBus::new();
-            (
-                bus.subscribe(subscriber);
+            $(
+                bus.subscribe($subscriber);
             )*
             bus
         }
@@ -80,12 +77,12 @@ macro_rules! event_bus_from_subscribes {
 }
 
 #[macro_export]
-macro_rules! event_bus_from_subscriber_fns {
+macro_rules! event_bus_from_subscriber_pinned_fns {
     ($($subscriber_fn:expr),*) => {
         {
             let mut bus = $crate::EventBus::new();
-            (
-                bus.subscribe_fn(subscriber_fn);
+            $(
+                bus.subscribe_pinned_fn($subscriber_fn);
             )*
             bus
         }

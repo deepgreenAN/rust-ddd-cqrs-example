@@ -1,5 +1,7 @@
+use crate::command_handlers::atm_command_handler::AtmCommandHandler;
 use crate::command_handlers::bank_account_command_handlers::BankAccountCommandHandler;
 use crate::query_handlers::QueryHandler;
+use common::commands::atm_commands::AtmCommand;
 use common::commands::bank_account_commands::BankAccountCommand;
 use common::query_statement::QueryStatement;
 use common::ApplicationError;
@@ -11,6 +13,9 @@ use axum::{
 use sea_orm::FromQueryResult;
 use std::sync::Arc;
 
+// -------------------------------------------------------------------------------------------------
+// 各種アグリゲイトに対するコマンドのaxumハンドラ
+
 /// BankAccountに関するコマンドに対するaxumハンドラ
 pub async fn bank_account_command_api_handler(
     State(bank_account_command_handler): State<Arc<BankAccountCommandHandler>>,
@@ -20,6 +25,19 @@ pub async fn bank_account_command_api_handler(
 
     bank_account_command_handler.handle_command(command).await
 }
+
+/// atmに関するコマンドに対するaxumハンドラ
+pub async fn atm_command_api_handler(
+    State(api_command_handler): State<Arc<AtmCommandHandler>>,
+    command_res: Result<Json<AtmCommand>, JsonRejection>,
+) -> Result<(), ApplicationError> {
+    let command = command_res?.0;
+
+    api_command_handler.handle_command(command).await
+}
+
+// -------------------------------------------------------------------------------------------------
+// ジェネリックなクエリのaxumハンドラ
 
 /// ジェネリックなクエリ(one)に対するaxumハンドラ
 pub async fn query_one_handler<T: FromQueryResult>(

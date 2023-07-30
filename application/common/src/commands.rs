@@ -1,3 +1,4 @@
+pub mod atm_commands;
 pub mod bank_account_commands;
 
 use domain::Id;
