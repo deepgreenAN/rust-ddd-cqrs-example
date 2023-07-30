@@ -1,3 +1,4 @@
+use super::ApiHandleCommand;
 use crate::event_handlers::bank_account_event_handlers::BankAccountEventBus;
 
 use ddd_cqrs_core::{Aggregate, HandleCommand};
@@ -12,12 +13,14 @@ use domain::aggregates::BankAccount;
 use domain::repositories::{BankAccountRepository, Transaction};
 use infrastructure::InfraError;
 
+use derive_new::new;
 use lru::LruCache;
 use std::sync::Mutex;
 
 // -------------------------------------------------------------------------------------------------
 // OpenAccountCommandHandler
 
+#[derive(new)]
 pub struct OpenAccountCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -56,6 +59,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for OpenAccount
 // -------------------------------------------------------------------------------------------------
 // DepositMoneyCommandHandler
 
+#[derive(new)]
 pub struct DepositMoneyCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -108,6 +112,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand for DepositMone
 // -------------------------------------------------------------------------------------------------
 // WithdrawMoneyCommand
 
+#[derive(new)]
 pub struct WithdrawMoneyCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -162,6 +167,7 @@ impl<R: BankAccountRepository<Error = InfraError>> HandleCommand
 // -------------------------------------------------------------------------------------------------
 // WriteCheckCommandHandler
 
+#[derive(new)]
 pub struct WriteCheckCommandHandler<R: BankAccountRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -246,11 +252,13 @@ impl BankAccountCommandHandler {
             false
         }
     }
+}
 
-    pub async fn handle_command(
-        &self,
-        command: BankAccountCommand,
-    ) -> Result<(), ApplicationError> {
+#[async_trait::async_trait]
+impl ApiHandleCommand for BankAccountCommandHandler {
+    type Command = BankAccountCommand;
+
+    async fn handle_command(&self, command: Self::Command) -> Result<(), ApplicationError> {
         let events = match command {
             BankAccountCommand::OpenAccountCommand(cmd, id) => {
                 if !self.check_command_duplicate(id) {

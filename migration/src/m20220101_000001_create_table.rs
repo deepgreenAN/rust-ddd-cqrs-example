@@ -11,11 +11,17 @@ pub struct Migration;
 
 /// BankAccountのテーブルを作成するSQLを作成
 pub fn create_bank_account_table_sql(backend: DbBackend) -> TableCreateStatement {
-    Schema::new(backend).create_table_from_entity(BankAccountEntity)
+    Schema::new(backend)
+        .create_table_from_entity(BankAccountEntity)
+        .if_not_exists()
+        .to_owned()
 }
 /// Atmのテーブルを作成するSQLを作成
 pub fn create_atm_table_sql(backend: DbBackend) -> TableCreateStatement {
-    Schema::new(backend).create_table_from_entity(AtmEntity)
+    Schema::new(backend)
+        .create_table_from_entity(AtmEntity)
+        .if_not_exists()
+        .to_owned()
 }
 
 /// BankAccountのテーブルを削除するSQLを作成

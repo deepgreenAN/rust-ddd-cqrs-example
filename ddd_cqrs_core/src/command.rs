@@ -2,7 +2,7 @@ use crate::Aggregate;
 
 /// コマンドハンドラが実装すべきトレイト
 #[async_trait::async_trait]
-pub trait HandleCommand {
+pub trait HandleCommand: Send + Sync {
     type Command;
     type Aggregate: Aggregate;
     type Error: std::error::Error;

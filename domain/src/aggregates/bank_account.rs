@@ -5,6 +5,7 @@ pub use self::email_address::EmailAddress;
 use crate::error::{BankAccountError, DomainError};
 use crate::events::bank_account_events::{self, BankAccountEvent};
 use crate::id::Id;
+use config::CONFIG;
 use ddd_cqrs_core::{Aggregate, DomainEventList};
 pub use name::AccountName;
 
@@ -92,9 +93,9 @@ impl BankAccount {
     }
     /// 預金を行う
     pub fn deposit_money(&mut self, amount: f64) -> Result<(), DomainError> {
-        if self.balance + amount > crate::global::BALANCE_UPPER_LIM {
+        if self.balance + amount > CONFIG.BALANCE_UPPER_LIM {
             Err(BankAccountError::DepositExceedLimitError {
-                limit: crate::global::BALANCE_UPPER_LIM,
+                limit: CONFIG.BALANCE_UPPER_LIM,
                 amount,
                 exceed_balance: self.balance + amount,
             }
@@ -161,9 +162,10 @@ impl Aggregate for BankAccount {
 pub mod orm {
     use super::*;
     use sea_orm::entity::prelude::*;
+    use serde::Serialize;
 
     /// BankAccountに対するORMモデル．
-    #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+    #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize)]
     #[sea_orm(table_name = "bank_account")]
     pub struct Model {
         /// id

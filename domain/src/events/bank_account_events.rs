@@ -1,5 +1,6 @@
 use crate::aggregates::atm::AtmId;
 use crate::aggregates::bank_account::{BankAccountId, EmailAddress};
+use config::CONFIG;
 use ddd_cqrs_core::DomainEvent;
 
 use serde::{Deserialize, Serialize};
@@ -67,7 +68,7 @@ impl DomainEvent for BankAccountEvent {
         type_name.to_string()
     }
     fn event_version() -> String {
-        crate::global::EVENT_VERSION.to_string()
+        CONFIG.EVENT_VERSION.to_string()
     }
 }
 

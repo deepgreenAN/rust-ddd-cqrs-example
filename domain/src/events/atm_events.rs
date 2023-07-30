@@ -1,3 +1,4 @@
+use config::CONFIG;
 use ddd_cqrs_core::DomainEvent;
 
 use serde::{Deserialize, Serialize};
@@ -11,6 +12,6 @@ impl DomainEvent for AtmEvents {
         "AtmEvents".to_string()
     }
     fn event_version() -> String {
-        crate::global::EVENT_VERSION.to_string()
+        CONFIG.EVENT_VERSION.to_string()
     }
 }

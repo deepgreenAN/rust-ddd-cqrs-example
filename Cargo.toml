@@ -7,9 +7,10 @@ edition = "2021"
 
 [workspace]
 members = [
-    "domain", 
+    "domain",
     "event_bus", 
-    "ddd_cqrs_core", 
+    "ddd_cqrs_core",
+    "config", 
     "migration", 
     "infrastructure",
     "application/serverside",

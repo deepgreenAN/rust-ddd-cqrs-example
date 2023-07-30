@@ -3,18 +3,13 @@ use domain::aggregates::bank_account::orm as bank_account_mod;
 use domain::aggregates::bank_account::{BankAccount, BankAccountId};
 use domain::repositories::{BankAccountRepository, Repository, Transaction};
 
+use derive_new::new;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel};
 
 /// データベースを用いたBankAccountRepository
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, new)]
 pub struct DbBankAccountRepository {
     conn: DatabaseConnection,
-}
-
-impl DbBankAccountRepository {
-    pub fn new(conn: DatabaseConnection) -> Self {
-        Self { conn }
-    }
 }
 
 #[async_trait::async_trait]

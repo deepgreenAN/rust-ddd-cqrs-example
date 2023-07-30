@@ -3,17 +3,13 @@ use domain::aggregates::atm::orm as atm_mod;
 use domain::aggregates::atm::{Atm, AtmId};
 use domain::repositories::{AtmRepository, Repository, Transaction};
 
+use derive_new::new;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel};
 
 /// データベースを用いたAtmRepository
+#[derive(Clone, Debug, new)]
 pub struct DbAtmRepository {
     conn: DatabaseConnection,
-}
-
-impl DbAtmRepository {
-    pub fn new(conn: DatabaseConnection) -> Self {
-        Self { conn }
-    }
 }
 
 #[async_trait::async_trait]

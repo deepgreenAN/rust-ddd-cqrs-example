@@ -8,13 +8,14 @@ use infrastructure::InfraError;
 
 use event_bus::{EventBus, Subscribe, Task};
 
+use derive_new::new;
 use tracing::info;
 
 // -------------------------------------------------------------------------------------------------
 // SendOpenAccountMailHandler
 
 /// アカウントの開設をメールで送信するイベントハンドラ
-#[derive(Clone)]
+#[derive(new)]
 pub struct SendOpenAccountMailHandler;
 
 #[async_trait::async_trait]
@@ -36,7 +37,7 @@ impl Subscribe for SendOpenAccountMailHandler {
 // AtmDepositHandler
 
 /// Atmに現金を入れるイベントハンドラ
-#[derive(Clone)]
+#[derive(new)]
 pub struct AtmDepositHandler<AR: AtmRepository<Error = InfraError>> {
     repo: AR,
     pool: <AR::Transaction as Transaction>::Pool,
@@ -76,7 +77,7 @@ impl<AR: AtmRepository<Error = InfraError>> Subscribe for AtmDepositHandler<AR> 
 // AtmWithdrawHandler
 
 /// Atmからお金を引き出すイベントハンドラ
-#[derive(Clone)]
+#[derive(new)]
 pub struct AtmWithdrawHandler<AR: AtmRepository<Error = InfraError>> {
     repo: AR,
     pool: <AR::Transaction as Transaction>::Pool,
@@ -116,7 +117,7 @@ impl<AR: AtmRepository<Error = InfraError>> Subscribe for AtmWithdrawHandler<AR>
 // ExternalWroteCheckHandler
 
 /// 小切手利用の際に外部サービスを利用するイベントハンドラ
-#[derive(Clone)]
+#[derive(new)]
 pub struct ExternalWroteCheckHandler;
 
 #[async_trait::async_trait]

@@ -1,3 +1,4 @@
+use super::ApiHandleCommand;
 use ddd_cqrs_core::{Aggregate, HandleCommand};
 
 use common::commands::atm_commands::AtmCommand;
@@ -8,12 +9,14 @@ use domain::aggregates::Atm;
 use domain::repositories::{AtmRepository, Transaction};
 use infrastructure::InfraError;
 
+use derive_new::new;
 use lru::LruCache;
 use std::sync::Mutex;
 
 // -------------------------------------------------------------------------------------------------
 // RegisterAtmCommandHandler
 
+#[derive(new)]
 pub struct RegisterAtmCommandHandler<R: AtmRepository<Error = InfraError>> {
     repo: R,
     pool: <R::Transaction as Transaction>::Pool,
@@ -67,8 +70,13 @@ impl AtmCommandHandler {
             false
         }
     }
+}
 
-    pub async fn handle_command(&self, command: AtmCommand) -> Result<(), ApplicationError> {
+#[async_trait::async_trait]
+impl ApiHandleCommand for AtmCommandHandler {
+    type Command = AtmCommand;
+
+    async fn handle_command(&self, command: Self::Command) -> Result<(), ApplicationError> {
         let _ = match command {
             AtmCommand::RegisterAtmCommand(cmd, id) => {
                 if !self.check_command_duplicate(id) {

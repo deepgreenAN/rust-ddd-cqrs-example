@@ -97,9 +97,10 @@ impl Aggregate for Atm {
 pub mod orm {
     use super::*;
     use sea_orm::entity::prelude::*;
+    use serde::Serialize;
 
     /// Atmに対するORMモデル．
-    #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
+    #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize)]
     #[sea_orm(table_name = "atm")]
     pub struct Model {
         #[sea_orm(primary_key, auto_increment = false, unique)]

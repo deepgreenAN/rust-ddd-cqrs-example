@@ -2,7 +2,7 @@ use common::query_statement::QueryStatement;
 use common::ApplicationError;
 use infrastructure::InfraError;
 
-use sea_orm::{DatabaseConnection, FromQueryResult, JsonValue};
+use sea_orm::{DatabaseConnection, FromQueryResult};
 use std::marker::PhantomData;
 
 /// クエリ結果を取得するジェネリックなクエリハンドラ
@@ -43,6 +43,3 @@ impl<T: FromQueryResult> QueryHandler<T> {
         Ok(res)
     }
 }
-
-/// カスタムクエリハンドラ
-pub type CustomQueryHandler = QueryHandler<JsonValue>;

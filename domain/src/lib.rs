@@ -1,5 +1,4 @@
 pub mod aggregates;
-pub mod global;
 
 #[cfg(feature = "server")]
 pub mod repositories;

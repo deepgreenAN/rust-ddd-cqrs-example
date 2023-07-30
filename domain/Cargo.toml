@@ -10,7 +10,8 @@ server = ["dep:async-trait", "orm", "dep:event_bus"]
 orm = ["dep:sea-orm", "dep:sea-query"]
 
 [dependencies]
-ddd_cqrs_core = { path = "../ddd_cqrs_core"}
+ddd_cqrs_core = { path = "../ddd_cqrs_core" }
+config = { path = "../config" }
 serde = { version = "^1.0", features = ["derive"]}
 uuid = { version = "^1.4", features = ["v4", "js"]}
 thiserror = "^1.0"
