@@ -7,7 +7,7 @@ edition = "2021"
 [features]
 # server = ["dep:async-trait", "dep:sea-orm", "dep:sea-query", "dep:event_bus"]
 server = ["dep:async-trait", "orm", "dep:event_bus"]
-orm = ["dep:sea-orm", "dep:sea-query"]
+orm = ["dep:sea-orm"]
 
 [dependencies]
 ddd_cqrs_core = { path = "../ddd_cqrs_core" }
@@ -19,6 +19,5 @@ email_address = "0.2.4"
 
 # 以下はオプション
 async-trait = { version = "^0.1", optional = true}
-sea-orm = { version = "0.11.3", optional = true, default-features = false, features = ["with-uuid", "macros"]}
-sea-query = { version = "0.28.5", optional = true}  # sea-ormのバージョンに合わせる
+sea-orm = { version = "0.12.1", optional = true, default-features = false, features = ["with-uuid", "macros"]}
 event_bus = { path = "../event_bus", optional = true}

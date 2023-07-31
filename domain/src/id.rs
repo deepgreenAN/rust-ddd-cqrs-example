@@ -62,13 +62,15 @@ impl<T: Clone> From<Id<T>> for String {
 mod sea_orm {
     use super::Id;
 
-    use sea_orm::{TryFromU64, TryGetable};
-    use sea_query::{value::Nullable, ValueType};
+    use sea_orm::{
+        sea_query::{value::Nullable, ValueType},
+        TryFromU64, TryGetable,
+    };
     use uuid::Uuid;
 
-    impl<T: Clone> From<Id<T>> for sea_query::Value {
+    impl<T: Clone> From<Id<T>> for sea_orm::sea_query::Value {
         fn from(value: Id<T>) -> Self {
-            sea_query::Value::Uuid(Some(Box::new(value.into())))
+            sea_orm::sea_query::Value::Uuid(Some(Box::new(value.into())))
         }
     }
 
@@ -83,25 +85,27 @@ mod sea_orm {
     }
 
     impl<T: Clone> ValueType for Id<T> {
-        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(
+            v: sea_orm::sea_query::Value,
+        ) -> Result<Self, sea_orm::sea_query::ValueTypeErr> {
             match v {
-                sea_query::Value::Uuid(Some(id)) => Ok((*id).into()),
-                _ => Err(sea_query::ValueTypeErr),
+                sea_orm::sea_query::Value::Uuid(Some(id)) => Ok((*id).into()),
+                _ => Err(sea_orm::sea_query::ValueTypeErr),
             }
         }
         fn type_name() -> String {
             <Uuid as ValueType>::type_name()
         }
-        fn array_type() -> sea_query::ArrayType {
+        fn array_type() -> sea_orm::sea_query::ArrayType {
             <Uuid as ValueType>::array_type()
         }
-        fn column_type() -> sea_query::ColumnType {
+        fn column_type() -> sea_orm::sea_query::ColumnType {
             <Uuid as ValueType>::column_type()
         }
     }
 
     impl<T: Clone> Nullable for Id<T> {
-        fn null() -> sea_query::Value {
+        fn null() -> sea_orm::sea_query::Value {
             <Uuid as Nullable>::null()
         }
     }

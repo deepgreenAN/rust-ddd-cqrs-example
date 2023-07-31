@@ -65,6 +65,9 @@ impl BankAccount {
             events_list: DomainEventList::new(),
         })
     }
+    pub fn id(&self) -> BankAccountId {
+        self.id
+    }
     pub fn opened(&self) -> bool {
         self.opened
     }

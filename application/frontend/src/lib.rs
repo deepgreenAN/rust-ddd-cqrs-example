@@ -1,10 +1,12 @@
 mod api_handler;
+pub mod queries;
 pub(crate) mod utils;
 
 pub use api_handler::*;
 
 // commonからの再エクスポート
 pub use common::commands;
+pub use common::commands::CommandId;
 pub use common::query_statement;
 pub use common::ApplicationError;
 

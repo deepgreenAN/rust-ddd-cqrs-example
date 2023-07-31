@@ -5,6 +5,7 @@ use domain::aggregates::bank_account::{AccountName, BankAccountId, EmailAddress}
 use serde::{Deserialize, Serialize};
 
 /// アカウント開設のコマンド
+#[cfg(feature = "server")]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct OpenAccountCommand {
     pub account_name: AccountName,
@@ -28,6 +29,7 @@ pub struct WithdrawMoneyCommand {
 }
 
 /// 小切手の発行を行うコマンド
+#[cfg(feature = "server")]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct WriteCheckCommand {
     pub account_id: BankAccountId,
@@ -40,6 +42,7 @@ pub struct WriteCheckCommand {
 // 以下参照バージョン
 
 /// アカウント開設のコマンド(参照)
+#[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
 pub struct OpenAccountRefCommand<'a> {
     pub account_name: &'a AccountName,
@@ -47,6 +50,7 @@ pub struct OpenAccountRefCommand<'a> {
 }
 
 /// 小切手の発行を行うコマンド(参照)
+#[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
 pub struct WriteCheckRefCommand<'a> {
     pub account_id: BankAccountId,

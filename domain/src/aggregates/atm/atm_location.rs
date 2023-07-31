@@ -29,17 +29,25 @@ impl From<AtmLocation> for String {
     }
 }
 
-/// sea-ormのトレイトに関する部分(deriveマクロにできる)
+/// sea-ormのトレイトに関する部分(参照からの変換以外はderiveマクロにできる)
 #[cfg(feature = "orm")]
 mod sea_orm {
     use super::AtmLocation;
 
-    use sea_orm::TryGetable;
-    use sea_query::{value::Nullable, ValueType};
+    use sea_orm::{
+        sea_query::{value::Nullable, ValueType},
+        TryGetable,
+    };
 
-    impl From<AtmLocation> for sea_query::Value {
+    impl From<AtmLocation> for sea_orm::sea_query::Value {
         fn from(value: AtmLocation) -> Self {
-            sea_query::Value::String(Some(Box::new(value.into())))
+            sea_orm::sea_query::Value::String(Some(Box::new(value.into())))
+        }
+    }
+
+    impl From<&AtmLocation> for sea_orm::sea_query::Value {
+        fn from(value: &AtmLocation) -> Self {
+            value.as_str().into()
         }
     }
 
@@ -54,25 +62,27 @@ mod sea_orm {
     }
 
     impl ValueType for AtmLocation {
-        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(
+            v: sea_orm::sea_query::Value,
+        ) -> Result<Self, sea_orm::sea_query::ValueTypeErr> {
             match v {
-                sea_query::Value::String(Some(atm_location)) => Ok((*atm_location).into()),
-                _ => Err(sea_query::ValueTypeErr),
+                sea_orm::sea_query::Value::String(Some(atm_location)) => Ok((*atm_location).into()),
+                _ => Err(sea_orm::sea_query::ValueTypeErr),
             }
         }
         fn type_name() -> String {
             <String as ValueType>::type_name()
         }
-        fn array_type() -> sea_query::ArrayType {
+        fn array_type() -> sea_orm::sea_query::ArrayType {
             <String as ValueType>::array_type()
         }
-        fn column_type() -> sea_query::ColumnType {
+        fn column_type() -> sea_orm::sea_query::ColumnType {
             <String as ValueType>::column_type()
         }
     }
 
     impl Nullable for AtmLocation {
-        fn null() -> sea_query::Value {
+        fn null() -> sea_orm::sea_query::Value {
             <String as Nullable>::null()
         }
     }

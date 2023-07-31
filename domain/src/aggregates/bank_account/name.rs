@@ -24,11 +24,14 @@ impl AccountName {
     pub fn last_name(&self) -> &str {
         &self.last_name
     }
+    pub fn to_name_string(&self) -> String {
+        format!("{} {}", self.first_name, self.last_name)
+    }
 }
 
 impl From<AccountName> for String {
     fn from(value: AccountName) -> Self {
-        format!("{} {}", value.first_name, value.last_name)
+        value.to_name_string()
     }
 }
 
@@ -49,17 +52,25 @@ impl TryFrom<String> for AccountName {
     }
 }
 
-/// sea-ormのトレイトに関する部分(deriveマクロにできる)
+/// sea-ormのトレイトに関する部分(参照からの変換以外はderiveマクロにできる)
 #[cfg(feature = "orm")]
 mod sea_orm {
     use super::AccountName;
 
-    use sea_orm::TryGetable;
-    use sea_query::{value::Nullable, ValueType};
+    use sea_orm::{
+        sea_query::{value::Nullable, ValueType},
+        TryGetable,
+    };
 
-    impl From<AccountName> for sea_query::Value {
+    impl From<AccountName> for sea_orm::sea_query::Value {
         fn from(value: AccountName) -> Self {
-            sea_query::Value::String(Some(Box::new(value.into())))
+            sea_orm::sea_query::Value::String(Some(Box::new(value.into())))
+        }
+    }
+
+    impl From<&AccountName> for sea_orm::sea_query::Value {
+        fn from(value: &AccountName) -> Self {
+            value.to_name_string().into()
         }
     }
 
@@ -76,28 +87,30 @@ mod sea_orm {
     }
 
     impl ValueType for AccountName {
-        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(
+            v: sea_orm::sea_query::Value,
+        ) -> Result<Self, sea_orm::sea_query::ValueTypeErr> {
             match v {
-                sea_query::Value::String(Some(account_name_str)) => {
+                sea_orm::sea_query::Value::String(Some(account_name_str)) => {
                     TryInto::<AccountName>::try_into(*account_name_str)
-                        .map_err(|_| sea_query::ValueTypeErr)
+                        .map_err(|_| sea_orm::sea_query::ValueTypeErr)
                 }
-                _ => Err(sea_query::ValueTypeErr),
+                _ => Err(sea_orm::sea_query::ValueTypeErr),
             }
         }
         fn type_name() -> String {
             <String as ValueType>::type_name()
         }
-        fn array_type() -> sea_query::ArrayType {
+        fn array_type() -> sea_orm::sea_query::ArrayType {
             <String as ValueType>::array_type()
         }
-        fn column_type() -> sea_query::ColumnType {
+        fn column_type() -> sea_orm::sea_query::ColumnType {
             <String as ValueType>::column_type()
         }
     }
 
     impl Nullable for AccountName {
-        fn null() -> sea_query::Value {
+        fn null() -> sea_orm::sea_query::Value {
             <String as Nullable>::null()
         }
     }

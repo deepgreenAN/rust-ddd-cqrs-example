@@ -1,5 +1,5 @@
 /// モックテスト用にurlを引数とする関数を定義するモジュール
-mod inner;
+pub(crate) mod inner;
 
 use crate::API_BASE_URL;
 

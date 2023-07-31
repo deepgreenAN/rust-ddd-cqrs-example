@@ -1,4 +1,3 @@
-use sea_orm::EntityTrait;
 pub use sea_orm::{DatabaseBackend, Statement, Value};
 
 use serde::{Deserialize, Serialize};
@@ -7,7 +6,10 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 
 #[cfg(feature = "frontend")]
-use sea_orm::query::{QueryTrait, Select};
+use sea_orm::{
+    query::{QueryTrait, Select},
+    EntityTrait,
+};
 
 pub const DEFAULT_DB_BACKEND: DatabaseBackend = DatabaseBackend::Postgres;
 

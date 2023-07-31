@@ -47,6 +47,9 @@ impl Atm {
             events_list: DomainEventList::new(),
         })
     }
+    pub fn id(&self) -> AtmId {
+        self.id
+    }
     pub fn location(&self) -> &AtmLocation {
         &self.location
     }

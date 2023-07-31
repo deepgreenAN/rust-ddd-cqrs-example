@@ -12,6 +12,12 @@ use serde::{Deserialize, Serialize};
 #[serde(try_from = "String", into = "String")]
 pub struct EmailAddress(InnerEmailAddress);
 
+impl EmailAddress {
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
 impl TryFrom<String> for EmailAddress {
     type Error = DomainError;
     fn try_from(value: String) -> Result<Self, Self::Error> {
@@ -35,17 +41,25 @@ impl Debug for EmailAddress {
     }
 }
 
-/// sea-ormのトレイトに関する部分(deriveマクロにできる)
+/// sea-ormのトレイトに関する部分(参照からの変換以外はderiveマクロにできる)
 #[cfg(feature = "orm")]
 mod sea_orm {
     use super::EmailAddress;
 
-    use sea_orm::TryGetable;
-    use sea_query::{value::Nullable, ValueType};
+    use sea_orm::{
+        sea_query::{value::Nullable, ValueType},
+        TryGetable,
+    };
 
-    impl From<EmailAddress> for sea_query::Value {
+    impl From<EmailAddress> for sea_orm::sea_query::Value {
         fn from(value: EmailAddress) -> Self {
-            sea_query::Value::String(Some(Box::new(value.into())))
+            sea_orm::sea_query::Value::String(Some(Box::new(value.into())))
+        }
+    }
+
+    impl From<&EmailAddress> for sea_orm::sea_query::Value {
+        fn from(value: &EmailAddress) -> Self {
+            value.as_str().into()
         }
     }
 
@@ -62,28 +76,30 @@ mod sea_orm {
     }
 
     impl ValueType for EmailAddress {
-        fn try_from(v: sea_query::Value) -> Result<Self, sea_query::ValueTypeErr> {
+        fn try_from(
+            v: sea_orm::sea_query::Value,
+        ) -> Result<Self, sea_orm::sea_query::ValueTypeErr> {
             match v {
-                sea_query::Value::String(Some(email_address)) => {
+                sea_orm::sea_query::Value::String(Some(email_address)) => {
                     TryInto::<EmailAddress>::try_into(*email_address)
-                        .map_err(|_| sea_query::ValueTypeErr)
+                        .map_err(|_| sea_orm::sea_query::ValueTypeErr)
                 }
-                _ => Err(sea_query::ValueTypeErr),
+                _ => Err(sea_orm::sea_query::ValueTypeErr),
             }
         }
         fn type_name() -> String {
             <String as ValueType>::type_name()
         }
-        fn array_type() -> sea_query::ArrayType {
+        fn array_type() -> sea_orm::sea_query::ArrayType {
             <String as ValueType>::array_type()
         }
-        fn column_type() -> sea_query::ColumnType {
+        fn column_type() -> sea_orm::sea_query::ColumnType {
             <String as ValueType>::column_type()
         }
     }
 
     impl Nullable for EmailAddress {
-        fn null() -> sea_query::Value {
+        fn null() -> sea_orm::sea_query::Value {
             <String as Nullable>::null()
         }
     }

@@ -4,6 +4,7 @@ use domain::aggregates::atm::AtmLocation;
 use serde::{Deserialize, Serialize};
 
 /// Atm登録のコマンド
+#[cfg(feature = "server")]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct RegisterAtmCommand {
     pub location: AtmLocation,
@@ -14,6 +15,7 @@ pub struct RegisterAtmCommand {
 // 以下参照バージョン
 
 /// Atm登録のコマンド(参照)
+#[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
 pub struct RegisterAtmRefCommand<'a> {
     pub location: &'a AtmLocation,
