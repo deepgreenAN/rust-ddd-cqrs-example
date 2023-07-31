@@ -1,11 +1,15 @@
 use super::CommandId;
 use domain::aggregates::atm::AtmLocation;
 
-use serde::{Deserialize, Serialize};
+#[cfg(feature = "server")]
+use serde::Deserialize;
+
+#[cfg(feature = "frontend")]
+use serde::Serialize;
 
 /// Atm登録のコマンド
 #[cfg(feature = "server")]
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct RegisterAtmCommand {
     pub location: AtmLocation,
     pub total_cash: f64,
@@ -37,6 +41,6 @@ pub enum AtmCommand {
 
 #[cfg(feature = "frontend")]
 #[derive(Debug, Clone, Serialize)]
-pub enum AtmCommand<'a> {
+pub enum AtmRefCommand<'a> {
     RegisterAtmCommand(RegisterAtmRefCommand<'a>, CommandId),
 }

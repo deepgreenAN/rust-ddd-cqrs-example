@@ -3,8 +3,8 @@ pub(crate) mod inner;
 
 use crate::API_BASE_URL;
 
-use common::commands::atm_commands::AtmCommand;
-use common::commands::bank_account_commands::BankAccountCommand;
+use common::commands::atm_commands::AtmRefCommand;
+use common::commands::bank_account_commands::BankAccountRefCommand;
 use common::{query_statement::QueryStatement, ApplicationError};
 use domain::aggregates::{Atm, BankAccount};
 
@@ -12,13 +12,13 @@ use serde::de::DeserializeOwned;
 
 /// BankAccountCommandを実行
 pub async fn execute_bank_account_command<'a>(
-    command: BankAccountCommand<'a>,
+    command: BankAccountRefCommand<'a>,
 ) -> Result<(), ApplicationError> {
     inner::execute_bank_account_command(API_BASE_URL, command).await
 }
 
 /// AtmCommandを実行
-pub async fn execute_atm_command<'a>(command: AtmCommand<'a>) -> Result<(), ApplicationError> {
+pub async fn execute_atm_command<'a>(command: AtmRefCommand<'a>) -> Result<(), ApplicationError> {
     inner::execute_atm_command(API_BASE_URL, command).await
 }
 

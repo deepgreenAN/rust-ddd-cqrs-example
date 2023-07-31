@@ -1,8 +1,7 @@
 /// モックテスト用にurlを引数とする関数を定義するモジュール
 use crate::utils::{deserialize_response, deserialize_response_unit};
+use crate::{AtmCommand, BankAccountCommand};
 
-use common::commands::atm_commands::AtmCommand;
-use common::commands::bank_account_commands::BankAccountCommand;
 use common::{query_statement::QueryStatement, ApplicationError};
 use domain::aggregates::{Atm, BankAccount};
 

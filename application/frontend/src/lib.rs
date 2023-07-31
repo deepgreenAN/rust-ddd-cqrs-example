@@ -10,6 +10,10 @@ pub use common::commands::CommandId;
 pub use common::query_statement;
 pub use common::ApplicationError;
 
+use common::commands::{atm_commands::AtmRefCommand, bank_account_commands::BankAccountRefCommand};
+pub type AtmCommand<'a> = AtmRefCommand<'a>;
+pub type BankAccountCommand<'a> = BankAccountRefCommand<'a>;
+
 // domainからの再エクスポート
 pub use domain::aggregates;
 

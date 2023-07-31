@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 
 /// アカウント開設のコマンド
 #[cfg(feature = "server")]
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct OpenAccountCommand {
     pub account_name: AccountName,
     pub email_address: EmailAddress,
 }
 
 /// 預金するコマンド
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct DepositMoneyCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -21,7 +21,7 @@ pub struct DepositMoneyCommand {
 }
 
 /// 引き出しを行うコマンド
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct WithdrawMoneyCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -30,7 +30,7 @@ pub struct WithdrawMoneyCommand {
 
 /// 小切手の発行を行うコマンド
 #[cfg(feature = "server")]
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 pub struct WriteCheckCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -43,7 +43,7 @@ pub struct WriteCheckCommand {
 
 /// アカウント開設のコマンド(参照)
 #[cfg(feature = "frontend")]
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct OpenAccountRefCommand<'a> {
     pub account_name: &'a AccountName,
     pub email_address: &'a EmailAddress,
@@ -51,7 +51,7 @@ pub struct OpenAccountRefCommand<'a> {
 
 /// 小切手の発行を行うコマンド(参照)
 #[cfg(feature = "frontend")]
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub struct WriteCheckRefCommand<'a> {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -64,7 +64,7 @@ pub struct WriteCheckRefCommand<'a> {
 
 /// bank_accountアグリゲイトに関わるコマンド全体(サーバーサイド側で利用)
 #[cfg(feature = "server")]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, PartialEq, Clone, Deserialize)]
 pub enum BankAccountCommand {
     OpenAccountCommand(OpenAccountCommand, CommandId),
     DepositMoneyCommand(DepositMoneyCommand, CommandId),
@@ -77,8 +77,8 @@ pub enum BankAccountCommand {
 
 /// bank_accountアグリゲイトに関わる参照コマンド全体(フロントエンド側で利用)
 #[cfg(feature = "frontend")]
-#[derive(Debug, Clone, Serialize)]
-pub enum BankAccountCommand<'a> {
+#[derive(Debug, PartialEq, Clone, Serialize)]
+pub enum BankAccountRefCommand<'a> {
     OpenAccountCommand(OpenAccountRefCommand<'a>, CommandId),
     DepositMoneyCommand(DepositMoneyCommand, CommandId),
     WithdrawMoneyCommand(WithdrawMoneyCommand, CommandId),

@@ -18,9 +18,18 @@ use sea_orm::JsonValue;
 use std::sync::Arc;
 use std::sync::Mutex;
 use tower_http::cors::{Any, CorsLayer};
+use tracing::Level;
+use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // トレーシング
+    let subscriber = FmtSubscriber::builder()
+        .with_max_level(Level::INFO)
+        .finish();
+
+    tracing::subscriber::set_global_default(subscriber)?;
+
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL envvar is not set.");
     let db_connection = Database::connect(db_url).await?;
     // マイグレーション

@@ -1,0 +1,4 @@
+2023-07-31 16:45:53.515 JST [5064] LOG:  redirecting log output to logging collector process
+2023-07-31 16:45:53.515 JST [5064] HINT:  Future log output will appear in directory "log".
+2023-07-31 17:19:50.282 JST [8796] LOG:  redirecting log output to logging collector process
+2023-07-31 17:19:50.282 JST [8796] HINT:  Future log output will appear in directory "log".

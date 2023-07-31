@@ -15,8 +15,8 @@ members = [
     "infrastructure",
     "application/serverside",
     "application/common",
-    # "application/frontend"
+    "application/frontend"
 ]
 exclude = [
-    "application/frontend"  # これをしないとcommonがrust-anaylyzer内で干渉する
+
 ]

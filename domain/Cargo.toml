@@ -21,3 +21,6 @@ email_address = "0.2.4"
 async-trait = { version = "^0.1", optional = true}
 sea-orm = { version = "0.12.1", optional = true, default-features = false, features = ["with-uuid", "macros"]}
 event_bus = { path = "../event_bus", optional = true}
+
+[dev-dependencies]
+serde_json = "^1.0"
