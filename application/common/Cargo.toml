@@ -8,7 +8,6 @@ edition = "2021"
 [features]
 server = ["dep:infrastructure", "dep:axum"]
 frontend = ["dep:reqwest"]
-default = []
 
 [dependencies]
 domain = { path = "../../domain", features = ["orm"]}

@@ -1,116 +1,61 @@
-mod inner {
-    /// モックテスト用にurlを引数とする
-    use crate::utils::{deserialize_response, deserialize_response_unit};
+/// モックテスト用にurlを引数とする関数を定義するモジュール
+mod inner;
 
-    use common::commands::atm_commands::AtmCommand;
-    use common::commands::bank_account_commands::BankAccountCommand;
-    use common::{query_statement::QueryStatement, ApplicationError};
-    use domain::aggregates::{Atm, BankAccount};
+use crate::API_BASE_URL;
 
-    use reqwest::Client;
-    use serde::de::DeserializeOwned;
+use common::commands::atm_commands::AtmCommand;
+use common::commands::bank_account_commands::BankAccountCommand;
+use common::{query_statement::QueryStatement, ApplicationError};
+use domain::aggregates::{Atm, BankAccount};
 
-    pub async fn execute_bank_account_command<'a>(
-        base_url: &str,
-        command: BankAccountCommand<'a>,
-    ) -> Result<(), ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/command/bank_account"))
-            .json(&command);
+use serde::de::DeserializeOwned;
 
-        let response = request.send().await?;
+/// BankAccountCommandを実行
+pub async fn execute_bank_account_command<'a>(
+    command: BankAccountCommand<'a>,
+) -> Result<(), ApplicationError> {
+    inner::execute_bank_account_command(API_BASE_URL, command).await
+}
 
-        deserialize_response_unit(response).await
-    }
+/// AtmCommandを実行
+pub async fn execute_atm_command<'a>(command: AtmCommand<'a>) -> Result<(), ApplicationError> {
+    inner::execute_atm_command(API_BASE_URL, command).await
+}
 
-    // pub async fn execute_atm_command<'a>(
-    //     base_url: &str,
-    //     command: AtmCommand<'a>,
-    // ) -> Result<(), ApplicationError> {
-    //     let request = Client::new()
-    //         .put(&format!("{base_url}/command/atm"))
-    //         .json(&command);
+/// BankAccountに関するクエリを実行して結果を一つ取得する．
+pub async fn query_one_bank_account(
+    query_stmt: QueryStatement,
+) -> Result<Option<BankAccount>, ApplicationError> {
+    inner::query_one_bank_account(API_BASE_URL, query_stmt).await
+}
 
-    //     let response = request.send().await?;
+/// BankAccountに関するクエリを実行して結果を複数取得する．
+pub async fn query_all_bank_account(
+    query_stmt: QueryStatement,
+) -> Result<Vec<BankAccount>, ApplicationError> {
+    inner::query_all_bank_account(API_BASE_URL, query_stmt).await
+}
 
-    //     deserialize_response_unit(response).await
-    // }
+/// Atmに関するクエリを実行して結果を一つ取得する．
+pub async fn query_one_atm(query_stmt: QueryStatement) -> Result<Option<Atm>, ApplicationError> {
+    inner::query_one_atm(API_BASE_URL, query_stmt).await
+}
 
-    pub async fn query_one_bank_account(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Option<BankAccount>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_one/bank_account"))
-            .json(&query_stmt);
+/// Atmに関するクエリを実行して結果を複数取得する．
+pub async fn query_all_atm(query_stmt: QueryStatement) -> Result<Vec<Atm>, ApplicationError> {
+    inner::query_all_atm(API_BASE_URL, query_stmt).await
+}
 
-        let response = request.send().await?;
+/// カスタムクエリを実行して結果を一つ取得する．
+pub async fn query_one_custom<T: DeserializeOwned>(
+    query_stmt: QueryStatement,
+) -> Result<Option<T>, ApplicationError> {
+    inner::query_one_custom(API_BASE_URL, query_stmt).await
+}
 
-        deserialize_response(response).await
-    }
-
-    pub async fn query_all_bank_account(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Vec<BankAccount>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_all/bank_account"))
-            .json(&query_stmt);
-
-        let response = request.send().await?;
-
-        deserialize_response(response).await
-    }
-
-    pub async fn query_one_atm(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Option<Atm>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_one/atm"))
-            .json(&query_stmt);
-
-        let response = request.send().await?;
-
-        deserialize_response(response).await
-    }
-
-    pub async fn query_all_atm(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Vec<Atm>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_all/atm"))
-            .json(&query_stmt);
-
-        let response = request.send().await?;
-
-        deserialize_response(response).await
-    }
-
-    pub async fn query_one_custom<T: DeserializeOwned>(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Option<T>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_one/custom"))
-            .json(&query_stmt);
-
-        let response = request.send().await?;
-
-        deserialize_response(response).await
-    }
-
-    pub async fn query_all_custom<T: DeserializeOwned>(
-        base_url: &str,
-        query_stmt: QueryStatement,
-    ) -> Result<Vec<T>, ApplicationError> {
-        let request = Client::new()
-            .put(&format!("{base_url}/query_all/custom"))
-            .json(&query_stmt);
-
-        let response = request.send().await?;
-
-        deserialize_response(response).await
-    }
+/// カスタムクエリを実行して結果を複数取得する．
+pub async fn query_all_custom<T: DeserializeOwned>(
+    query_stmt: QueryStatement,
+) -> Result<Vec<T>, ApplicationError> {
+    inner::query_all_custom(API_BASE_URL, query_stmt).await
 }

@@ -1,6 +1,16 @@
 mod api_handler;
 pub(crate) mod utils;
 
+pub use api_handler::*;
+
+// commonからの再エクスポート
+pub use common::commands;
+pub use common::query_statement;
+pub use common::ApplicationError;
+
+// domainからの再エクスポート
+pub use domain::aggregates;
+
 use config::CONFIG;
 
 // とりあえずテスト用URLを利用
