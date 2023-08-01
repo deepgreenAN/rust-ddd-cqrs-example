@@ -1,1 +1,1 @@
-pg_ctl start -D "C:/Program Files/PostgreSQL/13/data" -l "D:/rust_tutorial/cqrs_example/log/log.txt"
+pg_ctl start -D "C:/Program Files/PostgreSQL/13/data" -l "D:/rust_ddd_cqrs_example/log/log.txt"
