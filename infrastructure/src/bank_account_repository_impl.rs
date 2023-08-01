@@ -1,6 +1,5 @@
 use crate::{DBTransaction, InfraError};
-use domain::aggregates::bank_account::orm as bank_account_mod;
-use domain::aggregates::bank_account::{BankAccount, BankAccountId};
+use domain::aggregates::bank_account::{self, BankAccount, BankAccountId};
 use domain::repositories::{BankAccountRepository, Repository, Transaction};
 
 use derive_new::new;
@@ -23,7 +22,7 @@ impl Repository for DbBankAccountRepository {
         bank_account: BankAccount,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let active_model = Into::<bank_account_mod::Model>::into(bank_account).into_active_model();
+        let active_model = Into::<bank_account::orm::Model>::into(bank_account).into_active_model();
 
         match transaction {
             Some(transaction) => {
@@ -41,7 +40,7 @@ impl Repository for DbBankAccountRepository {
         bank_account: BankAccount,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let active_model = Into::<bank_account_mod::Model>::into(bank_account)
+        let active_model = Into::<bank_account::orm::Model>::into(bank_account)
             .into_active_model() // 全ての値を更新
             .reset_all();
 
@@ -62,7 +61,7 @@ impl Repository for DbBankAccountRepository {
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<Self::Aggregate, Self::Error> {
         let found_bank_account = {
-            let select = bank_account_mod::Entity::find_by_id(id);
+            let select = bank_account::orm::Entity::find_by_id(id);
 
             match transaction {
                 Some(transaction) => select.one(transaction.inner()).await?,
@@ -83,7 +82,7 @@ impl Repository for DbBankAccountRepository {
         id: BankAccountId,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let delete = bank_account_mod::Entity::delete_by_id(id);
+        let delete = bank_account::orm::Entity::delete_by_id(id);
 
         match transaction {
             Some(transaction) => {

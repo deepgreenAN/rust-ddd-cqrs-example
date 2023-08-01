@@ -1,6 +1,5 @@
 use crate::{DBTransaction, InfraError};
-use domain::aggregates::atm::orm as atm_mod;
-use domain::aggregates::atm::{Atm, AtmId};
+use domain::aggregates::atm::{self, Atm, AtmId};
 use domain::repositories::{AtmRepository, Repository, Transaction};
 
 use derive_new::new;
@@ -23,7 +22,7 @@ impl Repository for DbAtmRepository {
         atm: Atm,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let active_model = Into::<atm_mod::Model>::into(atm).into_active_model();
+        let active_model = Into::<atm::orm::Model>::into(atm).into_active_model();
 
         match transaction {
             Some(transaction) => {
@@ -40,7 +39,7 @@ impl Repository for DbAtmRepository {
         atm: Atm,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let active_model = Into::<atm_mod::Model>::into(atm)
+        let active_model = Into::<atm::orm::Model>::into(atm)
             .into_active_model()
             .reset_all();
 
@@ -61,7 +60,7 @@ impl Repository for DbAtmRepository {
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<Self::Aggregate, Self::Error> {
         let found_atm = {
-            let select = atm_mod::Entity::find_by_id(id);
+            let select = atm::orm::Entity::find_by_id(id);
 
             match transaction {
                 Some(transaction) => select.one(transaction.inner()).await?,
@@ -82,7 +81,7 @@ impl Repository for DbAtmRepository {
         id: AtmId,
         transaction: Option<&'t Self::Transaction>,
     ) -> Result<(), Self::Error> {
-        let delete = atm_mod::Entity::delete_by_id(id);
+        let delete = atm::orm::Entity::delete_by_id(id);
 
         match transaction {
             Some(transaction) => {
