@@ -5,5 +5,5 @@ mod id;
 
 pub use aggregate::Aggregate;
 pub use command::HandleCommand;
-pub use event::{DomainEvent, DomainEventList};
+pub use event::DomainEventList;
 pub use id::Identity;

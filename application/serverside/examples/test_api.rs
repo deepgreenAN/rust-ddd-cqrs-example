@@ -65,26 +65,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 db_connection.clone(),
             ),
         ),
-        event_bus: bank_account_event_handlers::BankAccountEventBus {
-            account_open_event_bus: event_bus_from_subscribes![
-                bank_account_event_handlers::SendOpenAccountMailHandler::new()
-            ],
-            customer_deposited_money_bus: event_bus_from_subscribes![
+        event_bus: bank_account_event_handlers::BankAccountEventBus::new(
+            event_bus_from_subscribes![
+                bank_account_event_handlers::SendOpenAccountMailHandler::new(),
                 bank_account_event_handlers::AtmDepositHandler::new(
                     atm_repo.clone(),
                     db_connection.clone()
-                )
-            ],
-            customer_withdrew_cash_bus: event_bus_from_subscribes![
+                ),
                 bank_account_event_handlers::AtmWithdrawHandler::new(
                     atm_repo.clone(),
                     db_connection.clone()
-                )
-            ],
-            customer_wrote_check_bus: event_bus_from_subscribes![
+                ),
                 bank_account_event_handlers::ExternalWroteCheckHandler::new()
             ],
-        },
+        ),
         command_id_cache: Mutex::new(LruCache::new(10.try_into().unwrap())),
     };
 

@@ -1,6 +1,9 @@
 use crate::{Event, Subscribe};
 
+use std::any::Any;
+use std::collections::HashMap;
 use std::future::Future;
+use std::marker::PhantomData;
 use std::pin::Pin;
 use std::sync::Arc;
 
@@ -9,54 +12,81 @@ use async_global_executor::Task;
 // -------------------------------------------------------------------------------------------------
 // EventBus
 
+type Subscribers<E, O> = Vec<Arc<dyn Subscribe<InputEvent = E, Output = O>>>;
+
 /// イベントバス．
-pub struct EventBus<E: Event, O: Send> {
-    subscribers: Vec<Arc<dyn Subscribe<InputEvent = E, Output = O>>>,
+pub struct EventBus<O: Send> {
+    subscribers_map: HashMap<String, Box<dyn Any + Send + Sync>>, // E, Subscribers<E, O>を保持できるハッシュマップ
+    _output_type: PhantomData<O>,
 }
 
-impl<E: Event, O: Send + 'static> EventBus<E, O> {
-    pub const fn new() -> Self {
+impl<O: Send + 'static> EventBus<O> {
+    pub fn new() -> Self {
         Self {
-            subscribers: Vec::new(),
+            subscribers_map: HashMap::new(),
+            _output_type: PhantomData,
         }
     }
-    fn subscribe_arc(&mut self, subscriber: Arc<dyn Subscribe<InputEvent = E, Output = O>>) {
-        self.subscribers.push(subscriber);
+    fn subscribe_arc<E: Event>(
+        &mut self,
+        subscriber: Arc<dyn Subscribe<InputEvent = E, Output = O>>,
+    ) {
+        use std::collections::hash_map::Entry::*;
+
+        let event_type = E::event_type();
+
+        match self.subscribers_map.entry(event_type) {
+            Occupied(mut o) => {
+                let subscribers = o.get_mut().downcast_mut::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグである．
+                subscribers.push(subscriber);
+            }
+            Vacant(v) => {
+                let subscribers_any = Box::new(vec![subscriber]) as Box<dyn Any + Send + Sync>;
+                v.insert(subscribers_any);
+            }
+        }
     }
     /// サブスクライバーを追加する．
-    pub fn subscribe<S: Subscribe<InputEvent = E, Output = O> + 'static>(&mut self, subscriber: S) {
+    pub fn subscribe<S, E>(&mut self, subscriber: S)
+    where
+        S: Subscribe<InputEvent = E, Output = O> + 'static,
+        E: Event,
+    {
         self.subscribe_arc(Arc::new(subscriber));
     }
     /// Pin<Box<dyn Future<Output = ()>>>を返す関数をサブスクライバーとして追加する．
-    pub fn subscribe_pinned_fn<F>(&mut self, func: F)
+    pub fn subscribe_pinned_fn<F, E>(&mut self, func: F)
     where
         F: for<'a> Fn(&'a E) -> Pin<Box<dyn Future<Output = O> + Send + 'a>>
             + Send
             + Sync
             + 'static,
+        E: Event,
     {
         self.subscribe(crate::subscribe::AsyncFuncSubscriber::from_pinned_fn(func));
     }
     /// イベントをサブスクライバーに通知して非同期実行しハンドルを返す．
-    pub fn dispatch_event(&self, event: E) -> Vec<Task<O>> {
+    pub fn dispatch_event<E: Event>(&self, event: E) -> Vec<Task<O>> {
         let mut tasks = Vec::new();
         let event = Arc::new(event);
+        let event_type = E::event_type();
 
-        for subscriber in self.subscribers.iter() {
-            let subscriber = Arc::clone(subscriber);
-            let event = Arc::clone(&event);
+        if let Some(subscribers_any) = self.subscribers_map.get(&event_type) {
+            let subscribers = subscribers_any.downcast_ref::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグである
 
-            let task =
-                async_global_executor::spawn(async move { subscriber.handle_event(&event).await });
+            for subscriber in subscribers.iter() {
+                let subscriber = Arc::clone(subscriber);
+                let event = Arc::clone(&event);
 
-            tasks.push(task);
+                let task =
+                    async_global_executor::spawn(
+                        async move { subscriber.handle_event(&event).await },
+                    );
+
+                tasks.push(task);
+            }
         }
         tasks
-    }
-    /// EventBusのextend
-    pub fn extend(&mut self, other: EventBus<E, O>) {
-        let EventBus { subscribers } = other;
-        self.subscribers.extend(subscribers);
     }
 }
 

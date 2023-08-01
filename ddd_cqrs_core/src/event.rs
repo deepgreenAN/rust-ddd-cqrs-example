@@ -1,31 +1,16 @@
-use std::fmt::Debug;
-
-use serde::{de::DeserializeOwned, Serialize};
-
-// -------------------------------------------------------------------------------------------------
-// DomainEvent
-
-/// ドメインイベントが実装べきトレイト
-pub trait DomainEvent:
-    Serialize + DeserializeOwned + Clone + PartialEq + Debug + Sync + Send
-{
-    /// イベントのバージョンを取得
-    fn event_version() -> String;
-
-    /// イベントの名前を取得．
-    fn event_type(&self) -> String;
-}
-
 // -------------------------------------------------------------------------------------------------
 // EventList
 
-/// DomainEventのリスト(Vec<E: DomainEvent>)の代用になるようにOptionを隠匿する．必ずSomeとなるようにする．
-#[derive(Debug, Clone, PartialEq)]
-pub struct DomainEventList<E: DomainEvent> {
+use std::fmt::Debug;
+
+/// DomainEventのリスト(Vec<E>)の代用になるようにOptionを隠匿する．必ずSomeとなるようにする．
+
+#[derive(Clone, PartialEq)]
+pub struct DomainEventList<E> {
     events_opt: Option<Vec<E>>,
 }
 
-impl<E: DomainEvent> Default for DomainEventList<E> {
+impl<E> Default for DomainEventList<E> {
     fn default() -> Self {
         Self {
             events_opt: Some(Vec::new()),
@@ -33,7 +18,19 @@ impl<E: DomainEvent> Default for DomainEventList<E> {
     }
 }
 
-impl<E: DomainEvent> DomainEventList<E> {
+impl<E: Debug> Debug for DomainEventList<E> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.events_opt.as_ref() {
+            Some(events) => f.debug_tuple("DomainEventList").field(events).finish(),
+            None => f
+                .debug_tuple("DomainEventList")
+                .field(&Vec::<E>::new())
+                .finish(),
+        }
+    }
+}
+
+impl<E> DomainEventList<E> {
     pub const fn new() -> Self {
         Self {
             events_opt: Some(Vec::new()),

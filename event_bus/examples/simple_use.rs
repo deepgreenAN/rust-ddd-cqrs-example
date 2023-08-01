@@ -2,15 +2,13 @@ use event_bus::async_trait;
 use event_bus::{Event, Subscribe};
 
 /// 気象情報を表すイベント
-#[derive(Clone)]
+#[derive(Clone, Event)]
 struct Weather {
     /// 気温(セ氏)
     temperature: f64,
     /// 気圧
     pressure: f64,
 }
-
-impl Event for Weather {}
 
 #[derive(Debug)]
 enum WeatherError {}
@@ -47,7 +45,7 @@ fn main() {
     use std::thread::sleep;
     use std::time::Duration;
 
-    let mut event_bus = EventBus::<Weather, Result<(), WeatherError>>::new();
+    let mut event_bus = EventBus::<Result<(), WeatherError>>::new();
 
     event_bus.subscribe(JpShowWeather);
     event_bus.subscribe_pinned_fn(|event| Box::pin(usa_show_weather(event)));
@@ -63,13 +61,11 @@ fn main() {
     println!("All event handler finished");
 
     // その他の作成方法
-    let mut bus: EventBus<Weather, Result<(), WeatherError>> =
+    let _: EventBus<Result<(), WeatherError>> =
         event_bus_from_subscribes![JpShowWeather, JpShowWeather];
 
-    let bus_2: EventBus<Weather, Result<(), WeatherError>> =
+    let _: EventBus<Result<(), WeatherError>> =
         event_bus_from_subscriber_pinned_fns![|event| Box::pin(usa_show_weather(event)), |event| {
             Box::pin(usa_show_weather(event))
         }];
-
-    bus.extend(bus_2);
 }

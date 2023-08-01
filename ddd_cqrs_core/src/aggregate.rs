@@ -1,14 +1,12 @@
-use crate::{DomainEvent, DomainEventList};
+use crate::DomainEventList;
 use uuid::Uuid;
-
-// use serde::{de::DeserializeOwned, Serialize};
 
 // -------------------------------------------------------------------------------------------------
 // Aggregate
 
 /// アグリゲイトが実装すべきトレイト
 pub trait Aggregate: Sync + Send {
-    type Event: DomainEvent;
+    type Event;
     type IntoId: Into<Uuid>;
     /// idを取得
     fn id(&self) -> Self::IntoId;

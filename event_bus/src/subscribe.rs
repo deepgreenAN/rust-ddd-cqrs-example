@@ -22,7 +22,7 @@ pub trait Subscribe: Send + Sync {
 
 /// 関数をSubscribeを実装した型にする
 /// Pin<Box<dyn Future>>をeventと同じライフタイムにするため高階トレイト境界を使っている
-pub(crate) struct AsyncFuncSubscriber<E: Event, O: Send> {
+pub struct AsyncFuncSubscriber<E: Event, O: Send> {
     inner_func: Box<
         dyn for<'event> Fn(&'event E) -> Pin<Box<dyn Future<Output = O> + Send + 'event>>
             + Send
@@ -31,7 +31,7 @@ pub(crate) struct AsyncFuncSubscriber<E: Event, O: Send> {
 }
 
 impl<E: Event, O: Send> AsyncFuncSubscriber<E, O> {
-    pub(crate) fn from_pinned_fn<F>(func: F) -> Self
+    pub fn from_pinned_fn<F>(func: F) -> Self
     where
         F: for<'event> Fn(&'event E) -> Pin<Box<dyn Future<Output = O> + Send + 'event>>
             + Send

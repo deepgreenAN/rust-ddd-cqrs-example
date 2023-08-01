@@ -143,36 +143,26 @@ impl Subscribe for ExternalWroteCheckHandler {
 }
 
 // -------------------------------------------------------------------------------------------------
-// BankAccountに関するイベントバス
+// BankAccountEventBus
 
-/// BankAccountに関するイベントバス．統合コマンドハンドラと一対一で利用し，これはイベントが追加される場合のみ変更されるかつ必ず変更しなければならいため，具象型としている．
+/// BankAccountに対するイベントバス
+#[derive(derive_new::new)]
 pub struct BankAccountEventBus {
-    pub account_open_event_bus: EventBus<AccountOpenedEvent, Result<(), ApplicationError>>,
-    pub customer_deposited_money_bus:
-        EventBus<CustomerDepositedMoneyEvent, Result<(), ApplicationError>>,
-    pub customer_withdrew_cash_bus:
-        EventBus<CustomerWithdrewCashEvent, Result<(), ApplicationError>>,
-    pub customer_wrote_check_bus: EventBus<CustomerWroteCheckEvent, Result<(), ApplicationError>>,
+    event_bus: EventBus<Result<(), ApplicationError>>,
 }
 
 impl BankAccountEventBus {
     pub fn dispatch_event(
         &self,
-        aggregate_event: BankAccountEvent,
+        event: BankAccountEvent,
     ) -> Vec<Task<Result<(), ApplicationError>>> {
-        match aggregate_event {
-            BankAccountEvent::AccountOpenedEvent(e) => {
-                self.account_open_event_bus.dispatch_event(e)
-            }
-            BankAccountEvent::CustomerDepositedMoneyEvent(e) => {
-                self.customer_deposited_money_bus.dispatch_event(e)
-            }
-            BankAccountEvent::CustomerWithdrewCashEvent(e) => {
-                self.customer_withdrew_cash_bus.dispatch_event(e)
-            }
-            BankAccountEvent::CustomerWroteCheckEvent(e) => {
-                self.customer_wrote_check_bus.dispatch_event(e)
-            }
+        use BankAccountEvent::*;
+
+        match event {
+            AccountOpenedEvent(e) => self.event_bus.dispatch_event(e),
+            CustomerDepositedMoneyEvent(e) => self.event_bus.dispatch_event(e),
+            CustomerWithdrewCashEvent(e) => self.event_bus.dispatch_event(e),
+            CustomerWroteCheckEvent(e) => self.event_bus.dispatch_event(e),
         }
     }
 }

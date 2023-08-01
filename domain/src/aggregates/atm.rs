@@ -1,13 +1,15 @@
 mod atm_location;
 
 use crate::error::{AtmError, DomainError};
-use crate::events::atm_events::AtmEvents;
+use crate::events::atm_events::AtmEvent;
 use crate::id::Id;
+
 pub use atm_location::AtmLocation;
 
 use ddd_cqrs_core::{Aggregate, DomainEventList};
 
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 // -------------------------------------------------------------------------------------------------
 // AtmId
@@ -27,7 +29,7 @@ pub struct Atm {
     location: AtmLocation,
     total_cash: f64,
     #[serde(skip)]
-    events_list: DomainEventList<AtmEvents>,
+    events_list: DomainEventList<AtmEvent>,
 }
 
 impl Atm {
@@ -80,7 +82,7 @@ impl Atm {
 }
 
 impl Aggregate for Atm {
-    type Event = AtmEvents;
+    type Event = AtmEvent;
     type IntoId = AtmId;
     fn id(&self) -> Self::IntoId {
         self.id

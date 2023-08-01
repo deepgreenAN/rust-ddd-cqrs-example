@@ -13,7 +13,7 @@ pub async fn execute_bank_account_command<'a>(
     command: BankAccountCommand<'a>,
 ) -> Result<(), ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/command/bank_account"))
+        .post(&format!("{base_url}/command/bank_account"))
         .json(&command);
 
     let response = request.send().await?;
@@ -26,7 +26,7 @@ pub async fn execute_atm_command<'a>(
     command: AtmCommand<'a>,
 ) -> Result<(), ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/command/atm"))
+        .post(&format!("{base_url}/command/atm"))
         .json(&command);
 
     let response = request.send().await?;
@@ -39,7 +39,7 @@ pub async fn query_one_bank_account(
     query_stmt: QueryStatement,
 ) -> Result<Option<BankAccount>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_one/bank_account"))
+        .post(&format!("{base_url}/query_one/bank_account"))
         .json(&query_stmt);
 
     let response = request.send().await?;
@@ -52,7 +52,7 @@ pub async fn query_all_bank_account(
     query_stmt: QueryStatement,
 ) -> Result<Vec<BankAccount>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_all/bank_account"))
+        .post(&format!("{base_url}/query_all/bank_account"))
         .json(&query_stmt);
 
     let response = request.send().await?;
@@ -65,7 +65,7 @@ pub async fn query_one_atm(
     query_stmt: QueryStatement,
 ) -> Result<Option<Atm>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_one/atm"))
+        .post(&format!("{base_url}/query_one/atm"))
         .json(&query_stmt);
 
     let response = request.send().await?;
@@ -78,7 +78,7 @@ pub async fn query_all_atm(
     query_stmt: QueryStatement,
 ) -> Result<Vec<Atm>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_all/atm"))
+        .post(&format!("{base_url}/query_all/atm"))
         .json(&query_stmt);
 
     let response = request.send().await?;
@@ -91,7 +91,7 @@ pub async fn query_one_custom<T: DeserializeOwned>(
     query_stmt: QueryStatement,
 ) -> Result<Option<T>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_one/custom"))
+        .post(&format!("{base_url}/query_one/custom"))
         .json(&query_stmt);
 
     let response = request.send().await?;
@@ -104,7 +104,7 @@ pub async fn query_all_custom<T: DeserializeOwned>(
     query_stmt: QueryStatement,
 ) -> Result<Vec<T>, ApplicationError> {
     let request = Client::new()
-        .put(&format!("{base_url}/query_all/custom"))
+        .post(&format!("{base_url}/query_all/custom"))
         .json(&query_stmt);
 
     let response = request.send().await?;
