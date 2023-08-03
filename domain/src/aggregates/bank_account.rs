@@ -189,6 +189,7 @@ pub mod orm {
 
     impl ActiveModelBehavior for ActiveModel {}
 
+    /// 双方のFromを実装することで，フィールド対応のバグを減らすことができる．
     impl From<Model> for BankAccount {
         fn from(value: Model) -> Self {
             let Model {
