@@ -42,3 +42,23 @@ impl Debug for EmailAddress {
             .finish()
     }
 }
+
+#[cfg(feature = "orm")]
+impl From<&EmailAddress> for sea_orm::Value {
+    fn from(value: &EmailAddress) -> Self {
+        value.as_str().into()
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// impl Dummy
+
+#[cfg(any(test, feature = "fake"))]
+impl fake::Dummy<fake::Faker> for EmailAddress {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &fake::Faker, rng: &mut R) -> Self {
+        use fake::Fake;
+
+        let email_address = fake::faker::internet::en::FreeEmail().fake_with_rng::<String, R>(rng);
+        email_address.try_into().unwrap()
+    }
+}

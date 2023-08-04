@@ -37,7 +37,7 @@ impl<O: Send + 'static> EventBus<O> {
 
         match self.subscribers_map.entry(event_type) {
             Occupied(mut o) => {
-                let subscribers = o.get_mut().downcast_mut::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグである．
+                let subscribers = o.get_mut().downcast_mut::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグかイベント名が重複する場合である．
                 subscribers.push(subscriber);
             }
             Vacant(v) => {

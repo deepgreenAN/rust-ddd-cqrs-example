@@ -53,3 +53,22 @@ impl TryFrom<String> for AccountName {
         }
     }
 }
+
+#[cfg(feature = "orm")]
+impl From<&AccountName> for sea_orm::Value {
+    fn from(value: &AccountName) -> Self {
+        value.to_name_string().into()
+    }
+}
+
+#[cfg(any(test, feature = "fake"))]
+impl fake::Dummy<fake::Faker> for AccountName {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &fake::Faker, rng: &mut R) -> Self {
+        use fake::Fake;
+
+        let first_name = fake::faker::name::en::FirstName().fake_with_rng::<String, R>(rng);
+        let last_name = fake::faker::name::en::LastName().fake_with_rng::<String, R>(rng);
+
+        AccountName::from_primitives(first_name, last_name).unwrap()
+    }
+}

@@ -152,3 +152,44 @@ pub mod orm {
         }
     }
 }
+
+// -------------------------------------------------------------------------------------------------
+// impl Dummy
+
+#[cfg(any(test, feature = "fake"))]
+impl fake::Dummy<fake::Faker> for Atm {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &fake::Faker, rng: &mut R) -> Self {
+        use fake::{Fake, Faker};
+
+        Self {
+            id: Faker.fake_with_rng(rng),
+            location: Faker.fake_with_rng(rng),
+            total_cash: Faker.fake_with_rng(rng),
+            events_list: DomainEventList::new(),
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// test
+
+#[cfg(test)]
+mod test {
+    use super::{orm, Atm};
+
+    #[cfg(feature = "orm")]
+    mod orm_test {
+        use super::{orm, Atm};
+        use fake::{Fake, Faker};
+
+        #[test]
+        fn aggregate_model_serde() {
+            let atm: Atm = Faker.fake();
+
+            let json_from_model =
+                serde_json::to_string(&Into::<orm::Model>::into(atm.clone())).unwrap();
+
+            assert_eq!(atm, serde_json::from_str(&json_from_model).unwrap())
+        }
+    }
+}

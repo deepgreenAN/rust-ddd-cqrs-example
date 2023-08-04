@@ -232,3 +232,49 @@ pub mod orm {
         }
     }
 }
+
+// -------------------------------------------------------------------------------------------------
+// impl Dummy
+
+#[cfg(any(test, feature = "fake"))]
+impl fake::Dummy<fake::Faker> for BankAccount {
+    fn dummy_with_rng<R: rand::Rng + ?Sized>(_: &fake::Faker, rng: &mut R) -> Self {
+        use fake::{Fake, Faker};
+
+        Self {
+            id: Faker.fake_with_rng(rng),
+            opened: Faker.fake_with_rng(rng),
+            balance: (0.0..CONFIG.BALANCE_UPPER_LIM).fake_with_rng(rng),
+            email_address: Faker.fake_with_rng(rng),
+            account_name: Faker.fake_with_rng(rng),
+            events_list: DomainEventList::new(),
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// test
+
+#[cfg(test)]
+mod test {
+    use super::{orm, BankAccount};
+
+    #[cfg(feature = "orm")]
+    mod orm_test {
+        use super::{orm, BankAccount};
+        use fake::{Fake, Faker};
+
+        #[test]
+        fn aggregate_model_serde() {
+            let bank_account = Faker.fake::<BankAccount>();
+
+            let json_from_model =
+                serde_json::to_string(&(Into::<orm::Model>::into(bank_account.clone()))).unwrap();
+
+            assert_eq!(
+                bank_account,
+                serde_json::from_str(&json_from_model).unwrap()
+            );
+        }
+    }
+}

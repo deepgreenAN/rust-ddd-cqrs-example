@@ -8,6 +8,7 @@ edition = "2021"
 # server = ["dep:async-trait", "dep:sea-orm", "dep:sea-query", "dep:event_bus"]
 server = ["dep:async-trait", "orm", "dep:event_bus"]
 orm = ["dep:sea-orm", "dep:sea-orm-newtype"]
+fake = ["dep:fake", "dep:rand"]
 
 [dependencies]
 ddd_cqrs_core = { path = "../ddd_cqrs_core" }
@@ -22,6 +23,11 @@ async-trait = { version = "^0.1", optional = true}
 sea-orm = { version = "0.12.1", optional = true, default-features = false, features = ["with-uuid", "macros"]}
 sea-orm-newtype = { version = "0.0.1", optional = true }
 event_bus = { path = "../event_bus", optional = true}
+fake = { version = "^2.6", optional = true, features = ["uuid"]}
+rand = { version = "^0.8", optional = true}
 
 [dev-dependencies]
 serde_json = "^1.0"
+
+fake = { version = "^2.6", features = ["uuid"]}
+rand = { version = "^0.8"}
