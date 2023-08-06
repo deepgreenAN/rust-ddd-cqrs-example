@@ -11,11 +11,11 @@ use std::pin::Pin;
 /// トランザクション用のトレイト．ネストはできない．
 #[async_trait::async_trait]
 pub trait Transaction: Sized + Send + Sync {
-    type Inner;
+    // type Inner;
     type Error;
     type Pool: Send + Sync + Clone;
-    // 内部のコネクション・トランザクション等を取得
-    fn inner(&self) -> &Self::Inner;
+    // // 内部のコネクション・トランザクション等を取得
+    // fn inner(&self) -> &Self::Inner;
     // トランザクションのコンストラクタ
     async fn begin(pool: &Self::Pool) -> Result<Self, Self::Error>;
     // コミット
@@ -42,27 +42,27 @@ pub trait Repository: Send + Sync {
     /// アグリゲイトを一つ保存(インサート)
     async fn save<'t>(
         &self,
-        aggregate: Self::Aggregate,
-        transaction: Option<&'t Self::Transaction>,
-    ) -> Result<(), Self::Error>;
+        aggregate: <Self as Repository>::Aggregate,
+        transaction: Option<&'t <Self as Repository>::Transaction>,
+    ) -> Result<(), <Self as Repository>::Error>;
     /// アグリゲイトを一つアップデート
     async fn edit<'t>(
         &self,
-        aggregate: Self::Aggregate,
-        transaction: Option<&'t Self::Transaction>,
-    ) -> Result<(), Self::Error>;
+        aggregate: <Self as Repository>::Aggregate,
+        transaction: Option<&'t <Self as Repository>::Transaction>,
+    ) -> Result<(), <Self as Repository>::Error>;
     /// アグリゲイトをidから取得
     async fn find_by_id<'t>(
         &self,
-        id: <Self::Aggregate as Aggregate>::IntoId,
-        transaction: Option<&'t Self::Transaction>,
-    ) -> Result<Self::Aggregate, Self::Error>;
+        id: <<Self as Repository>::Aggregate as Aggregate>::IntoId,
+        transaction: Option<&'t <Self as Repository>::Transaction>,
+    ) -> Result<Self::Aggregate, <Self as Repository>::Error>;
     /// 指定したidのアグリゲイトを削除
     async fn remove<'t>(
         &self,
-        id: <Self::Aggregate as Aggregate>::IntoId,
-        transaction: Option<&'t Self::Transaction>,
-    ) -> Result<(), Self::Error>;
+        id: <<Self as Repository>::Aggregate as Aggregate>::IntoId,
+        transaction: Option<&'t <Self as Repository>::Transaction>,
+    ) -> Result<(), <Self as Repository>::Error>;
 }
 
 /// BankAccountのリポジトリ(追加の処理を記述する)

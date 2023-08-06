@@ -1,6 +1,6 @@
-use crate::{DBTransaction, InfraError};
+use crate::{transactions::DbTransaction, InfraError};
 use domain::aggregates::bank_account::{self, BankAccount, BankAccountId};
-use domain::repositories::{BankAccountRepository, Repository, Transaction};
+use domain::repositories::{BankAccountRepository, Repository};
 
 use derive_new::new;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel};
@@ -15,7 +15,7 @@ pub struct DbBankAccountRepository {
 impl Repository for DbBankAccountRepository {
     type Error = InfraError;
     type Aggregate = BankAccount;
-    type Transaction = DBTransaction;
+    type Transaction = DbTransaction;
 
     async fn save<'t>(
         &self,
@@ -98,3 +98,84 @@ impl Repository for DbBankAccountRepository {
 }
 
 impl BankAccountRepository for DbBankAccountRepository {}
+
+// -------------------------------------------------------------------------------------------------
+// test
+
+#[cfg(test)]
+mod test {
+    use super::{DbBankAccountRepository, DbTransaction};
+    use crate::{test_utils::assert_aggregates_eq, InfraError};
+    use domain::repositories::Repository;
+    use domain::{
+        aggregates::{bank_account, BankAccount},
+        repositories::Transaction,
+    };
+
+    use rand::seq::SliceRandom;
+    use rand::Rng;
+    use rstest::{fixture, rstest};
+    use sea_orm::{Database, EntityTrait};
+
+    #[fixture]
+    async fn save_bank_accounts(
+    ) -> Result<(DbBankAccountRepository, DbTransaction, Vec<BankAccount>), InfraError> {
+        let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL envvar is not set.");
+        let db_connection = Database::connect(db_url).await?;
+
+        let transaction = DbTransaction::begin(&db_connection).await?;
+
+        let repo = DbBankAccountRepository::new(db_connection);
+
+        let bank_accounts = fake::vec![BankAccount; 50];
+
+        for bank_account in bank_accounts.iter().cloned() {
+            repo.save(bank_account, Some(&transaction)).await?;
+        }
+
+        Ok((repo, transaction, bank_accounts))
+    }
+
+    async fn query_all_bank_account(
+        transaction: &DbTransaction,
+    ) -> Result<Vec<BankAccount>, InfraError> {
+        let models = bank_account::orm::Entity::find()
+            .all(transaction.inner())
+            .await?;
+
+        Ok(models
+            .into_iter()
+            .map(Into::<BankAccount>::into)
+            .collect::<Vec<_>>())
+    }
+
+    #[ignore]
+    #[rstest]
+    #[tokio::test]
+    async fn test_edit_bank_accounts(
+        #[future] save_bank_accounts: Result<
+            (DbBankAccountRepository, DbTransaction, Vec<BankAccount>),
+            InfraError,
+        >,
+    ) {
+        let (repo, transaction, mut bank_accounts) = save_bank_accounts.await.unwrap();
+
+        let mut rng = rand::thread_rng();
+
+        // シャッフル
+        bank_accounts.shuffle(&mut rng);
+
+        for bank_account in bank_accounts.iter_mut().take(20) {
+            bank_account
+                .deposit_money(rng.gen_range(0.0..100_000.0))
+                .unwrap();
+            repo.edit(bank_account.clone(), Some(&transaction))
+                .await
+                .unwrap();
+        }
+
+        // データを取得して比較
+        let mut actual_bank_accounts = query_all_bank_account(&transaction).await.unwrap();
+        assert_aggregates_eq(&mut actual_bank_accounts, &mut bank_accounts);
+    }
+}

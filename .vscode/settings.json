@@ -2,6 +2,7 @@
     "rust-analyzer.cargo.features": [
         "frontend",
         "server",
-        "fake"
+        "fake",
+        "mock"
     ]
 }

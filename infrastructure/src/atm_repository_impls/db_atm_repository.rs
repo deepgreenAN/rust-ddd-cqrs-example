@@ -1,6 +1,6 @@
-use crate::{DBTransaction, InfraError};
+use crate::{transactions::DbTransaction, InfraError};
 use domain::aggregates::atm::{self, Atm, AtmId};
-use domain::repositories::{AtmRepository, Repository, Transaction};
+use domain::repositories::{AtmRepository, Repository};
 
 use derive_new::new;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel};
@@ -15,7 +15,7 @@ pub struct DbAtmRepository {
 impl Repository for DbAtmRepository {
     type Error = InfraError;
     type Aggregate = Atm;
-    type Transaction = DBTransaction;
+    type Transaction = DbTransaction;
 
     async fn save<'t>(
         &self,

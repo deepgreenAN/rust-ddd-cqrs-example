@@ -1,6 +1,6 @@
 use domain::aggregates::{atm, bank_account};
 use infrastructure::{
-    atm_repository_impl::DbAtmRepository, bank_account_repository_impl::DbBankAccountRepository,
+    atm_repository_impls::DbAtmRepository, bank_account_repository_impls::DbBankAccountRepository,
 };
 use serverside::api_handlers;
 use serverside::command_handlers::{atm_command_handlers, bank_account_command_handlers};

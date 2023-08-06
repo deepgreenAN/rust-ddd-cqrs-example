@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[features]
+mock = ["dep:mockall"]
 
 [dependencies]
 domain = { path = "../domain", features = ["server"]}
@@ -12,3 +14,18 @@ sea-orm = { version = "0.12.1", features = ["with-uuid"]}
 serde = { version = "^1.0", features = ["derive"]}
 thiserror = "^1.0"
 derive-new = "^0.5"
+ddd_cqrs_core = { path = "../ddd_cqrs_core"}
+
+# 以下はoptional
+mockall = { version = "^0.11", optional = true}
+
+
+[dev-dependencies]
+domain = { path = "../domain", features = ["server", "fake"]}
+sea-orm = { version = "0.12.1", features = ["with-uuid", "runtime-tokio-rustls","sqlx-postgres"]}
+fake = "^2.6"
+rand = "^0.8"
+pretty_assertions = "^1.4"
+rstest = { version = "^0.18"}
+tokio = { version = "^1.29", features = ["full"]}
+uuid = "^1.4"

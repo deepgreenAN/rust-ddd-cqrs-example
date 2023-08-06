@@ -5,9 +5,9 @@ use uuid::Uuid;
 // Aggregate
 
 /// アグリゲイトが実装すべきトレイト
-pub trait Aggregate: Sync + Send {
+pub trait Aggregate: Sync + Send + PartialEq {
     type Event;
-    type IntoId: Into<Uuid>;
+    type IntoId: Into<Uuid> + Eq + Ord;
     /// idを取得
     fn id(&self) -> Self::IntoId;
     /// ドメインイベントを共有参照として取得

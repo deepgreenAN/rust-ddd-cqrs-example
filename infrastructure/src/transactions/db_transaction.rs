@@ -6,18 +6,21 @@ use std::future::Future;
 use std::pin::Pin;
 
 /// データベースのトランザクション
-pub struct DBTransaction {
+pub struct DbTransaction {
     inner: DatabaseTransaction,
 }
 
-#[async_trait::async_trait]
-impl Transaction for DBTransaction {
-    type Error = InfraError;
-    type Inner = DatabaseTransaction;
-    type Pool = DatabaseConnection;
-    fn inner(&self) -> &Self::Inner {
+impl DbTransaction {
+    pub fn inner(&self) -> &DatabaseTransaction {
         &self.inner
     }
+}
+
+#[async_trait::async_trait]
+impl Transaction for DbTransaction {
+    type Error = InfraError;
+    type Pool = DatabaseConnection;
+
     async fn begin(pool: &Self::Pool) -> Result<Self, Self::Error> {
         let inner = pool.begin().await?;
         Ok(Self { inner })
