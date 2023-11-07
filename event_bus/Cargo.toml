@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 event_bus_macro = { path = "event_bus_macro"}
 async-trait = "^0.1"
-thiserror = "^1.0"
 async-global-executor = { version = "^2.3", features = ["tokio"]}
 
 [dev-dependencies]
-# tokio = { version = "1.29.1", features = ["rt"]}
+tokio = { version = "1.29.1", features = ["full"]}
+futures = "0.3.28"

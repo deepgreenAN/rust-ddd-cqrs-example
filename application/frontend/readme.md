@@ -1,6 +1,6 @@
 # application/frontend
 
-アプリケーションの公開API部分．場合によってはwasmでも利用できる．なるべく依存を少なくするため、`domain`(orm部分も含む)と`application/common`にのみ依存するようにする．
+アプリケーションの公開API部分．場合によってはwasmでも利用できる．なるべく依存を少なくするため、`domain`(orm部分も含む)と`application/common`にのみ依存するようにする．現状ormに依存しているため、依存をdomainやinfrastructureに移動すべき
 
 ## 変更(追加)する部分
 

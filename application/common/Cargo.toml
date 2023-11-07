@@ -8,6 +8,7 @@ edition = "2021"
 [features]
 server = ["dep:infrastructure", "dep:axum"]
 frontend = ["dep:reqwest"]
+fake = ["dep:fake", "dep:rand", "domain/fake"]
 
 [dependencies]
 domain = { path = "../../domain", features = ["orm"]}
@@ -15,9 +16,14 @@ thiserror = "^1.0"
 serde = { version = "^1.0", features = ["derive"]}
 sea-orm = { version = "0.12.1", default-features = false, features = ["with-uuid", "macros"]}
 
-
 # 以下はoptional
 infrastructure = { path = "../../infrastructure", optional = true }
 axum = { version = "^0.6", optional = true}
 reqwest = { version = "^0.11", optional = true }
+fake = { version = "^2.6", optional = true, features = ["derive"]}
+rand = { version = "0.8", optional = true}
+
+[dev-dependencies]
+domain = { path = "../../domain", features = ["orm", "fake"]}
+fake = "^2.6"
 serde_json = "^1.0"

@@ -1,6 +1,6 @@
 use crate::{Event, Subscribe};
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::collections::HashMap;
 use std::future::Future;
 use std::marker::PhantomData;
@@ -14,9 +14,9 @@ use async_global_executor::Task;
 
 type Subscribers<E, O> = Vec<Arc<dyn Subscribe<InputEvent = E, Output = O>>>;
 
-/// イベントバス．
+/// EventBus
 pub struct EventBus<O: Send> {
-    subscribers_map: HashMap<String, Box<dyn Any + Send + Sync>>, // E, Subscribers<E, O>を保持できるハッシュマップ
+    subscribers_map: HashMap<TypeId, Box<dyn Any + Send + Sync>>, // E, Subscribers<E, O>を保持できるハッシュマップ
     _output_type: PhantomData<O>,
 }
 
@@ -33,11 +33,11 @@ impl<O: Send + 'static> EventBus<O> {
     ) {
         use std::collections::hash_map::Entry::*;
 
-        let event_type = E::event_type();
+        let event_type = TypeId::of::<E>();
 
         match self.subscribers_map.entry(event_type) {
             Occupied(mut o) => {
-                let subscribers = o.get_mut().downcast_mut::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグかイベント名が重複する場合である．
+                let subscribers = o.get_mut().downcast_mut::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果が失敗するのはバグである
                 subscribers.push(subscriber);
             }
             Vacant(v) => {
@@ -52,7 +52,7 @@ impl<O: Send + 'static> EventBus<O> {
         S: Subscribe<InputEvent = E, Output = O> + 'static,
         E: Event,
     {
-        self.subscribe_arc(Arc::new(subscriber));
+        self.subscribe_arc(Arc::new(subscriber))
     }
     /// Pin<Box<dyn Future<Output = ()>>>を返す関数をサブスクライバーとして追加する．
     pub fn subscribe_pinned_fn<F, E>(&mut self, func: F)
@@ -63,17 +63,16 @@ impl<O: Send + 'static> EventBus<O> {
             + 'static,
         E: Event,
     {
-        self.subscribe(crate::subscribe::AsyncFuncSubscriber::from_pinned_fn(func));
+        self.subscribe(crate::subscribe::AsyncFuncSubscriber::from_pinned_fn(func))
     }
     /// イベントをサブスクライバーに通知して非同期実行しハンドルを返す．
     pub fn dispatch_event<E: Event>(&self, event: E) -> Vec<Task<O>> {
         let mut tasks = Vec::new();
         let event = Arc::new(event);
-        let event_type = E::event_type();
+        let event_type = TypeId::of::<E>();
 
         if let Some(subscribers_any) = self.subscribers_map.get(&event_type) {
-            let subscribers = subscribers_any.downcast_ref::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果がNoneとなるのはバグである
-
+            let subscribers = subscribers_any.downcast_ref::<Subscribers<E, O>>().unwrap(); // ダウンキャスト結果が失敗するのはバグである
             for subscriber in subscribers.iter() {
                 let subscriber = Arc::clone(subscriber);
                 let event = Arc::clone(&event);

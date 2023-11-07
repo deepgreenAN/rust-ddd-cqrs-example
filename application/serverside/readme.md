@@ -1,6 +1,6 @@
 # application/serverside
 
-アプリケーション層におけるバックエンド部分の実装．
+アプリケーション層におけるバックエンド部分の実装．現状ormに依存しているため、依存をdomainやinfrastructureに移動すべき
 
 ## テストAPIの起動
 

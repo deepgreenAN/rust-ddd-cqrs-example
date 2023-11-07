@@ -605,7 +605,9 @@ version = "0.1.0"
 dependencies = [
  "axum",
  "domain",
+ "fake",
  "infrastructure",
+ "rand",
  "reqwest",
  "sea-orm",
  "serde",
@@ -847,6 +849,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1435fa1053d8b2fbbe9be7e97eca7f33d37b28409959813daefc1446a14247f1"
 
 [[package]]
+name = "dummy"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8da904daa6ce71bb51e03fd0529b08bad4b18bae89e176873c7bae9eb91a19ce"
+dependencies = [
+ "darling",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.27",
+]
+
+[[package]]
 name = "either"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -924,7 +938,8 @@ dependencies = [
  "async-global-executor",
  "async-trait",
  "event_bus_macro",
- "thiserror",
+ "futures",
+ "tokio",
 ]
 
 [[package]]
@@ -942,6 +957,7 @@ version = "2.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a44c765350db469b774425ff1c833890b16ceb9612fb5d7c4bbdf4a1b55f876"
 dependencies = [
+ "dummy",
  "rand",
  "unidecode",
  "uuid",

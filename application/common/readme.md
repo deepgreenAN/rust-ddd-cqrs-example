@@ -1,6 +1,6 @@
 # application/common
 
-application層のバックエンド・フロントエンドに共通する部分．コマンドはここで定義する．
+application層のバックエンド・フロントエンドに共通する部分．コマンドはここで定義する．参照コマンドの作成はマクロで記述できそう．現状ormに依存しているため、依存をdomainやinfrastructureに移動すべき？．commonだけormに依存してよい？．
 
 ## features
 

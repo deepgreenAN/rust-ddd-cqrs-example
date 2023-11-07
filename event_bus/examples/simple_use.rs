@@ -40,10 +40,10 @@ async fn usa_show_weather(event: &Weather) -> Result<(), WeatherError> {
     Ok(())
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     use event_bus::{event_bus_from_subscriber_pinned_fns, event_bus_from_subscribes, EventBus};
-    use std::thread::sleep;
-    use std::time::Duration;
+    use futures::future::join_all;
 
     let mut event_bus = EventBus::<Result<(), WeatherError>>::new();
 
@@ -55,9 +55,8 @@ fn main() {
         pressure: 1014.0,
     });
 
-    while !tasks.iter().all(|task| task.is_finished()) {
-        sleep(Duration::from_millis(100));
-    }
+    join_all(tasks).await;
+
     println!("All event handler finished");
 
     // その他の作成方法

@@ -1,7 +1,7 @@
 use quote::quote;
 use syn::{parse_macro_input, spanned::Spanned, DeriveInput};
 
-#[proc_macro_derive(Event)]
+#[proc_macro_derive(Event, attributes(event_bus))]
 pub fn derive_event(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input_ast = parse_macro_input!(input as DeriveInput);
     derive_event_inner(input_ast)
@@ -21,10 +21,6 @@ fn derive_event_inner(input_ast: DeriveInput) -> syn::Result<proc_macro2::TokenS
     }
 
     Ok(quote! {
-        impl ::event_bus::Event for #type_name {
-            fn event_type() -> String {
-                stringify!(#type_name).to_string()
-            }
-        }
+        impl ::event_bus::Event for #type_name {}
     })
 }

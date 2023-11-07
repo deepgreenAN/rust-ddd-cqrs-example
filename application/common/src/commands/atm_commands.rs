@@ -10,6 +10,7 @@ use serde::Serialize;
 /// Atm登録のコマンド
 #[cfg(feature = "server")]
 #[derive(Debug, Clone, PartialEq, Deserialize)]
+#[cfg_attr(feature = "fake", derive(fake::Dummy))]
 pub struct RegisterAtmCommand {
     pub location: AtmLocation,
     pub total_cash: f64,
@@ -47,16 +48,17 @@ pub enum AtmRefCommand<'a> {
 
 #[cfg(all(test, all(feature = "server", feature = "frontend")))]
 mod serde_test {
+    use fake::{Fake, Faker};
+
     #[test]
     fn atm_command() {
         use super::{AtmCommand, AtmRefCommand, RegisterAtmCommand, RegisterAtmRefCommand};
-        use crate::commands::CommandId;
 
         use domain::aggregates::atm::AtmLocation;
 
-        let location = AtmLocation::from("東京".to_string());
-        let total_cash = 100_000_000.0;
-        let command_id = CommandId::generate();
+        let location = Faker.fake::<AtmLocation>();
+        let total_cash = (1000_000.0..10_000_000.0).fake();
+        let command_id = Faker.fake();
 
         let atm_ref_command = AtmRefCommand::RegisterAtmCommand(
             RegisterAtmRefCommand {

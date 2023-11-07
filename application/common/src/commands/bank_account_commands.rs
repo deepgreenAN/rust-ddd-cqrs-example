@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 /// アカウント開設のコマンド
 #[cfg(feature = "server")]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "fake", derive(fake::Dummy))]
 pub struct OpenAccountCommand {
     pub account_name: AccountName,
     pub email_address: EmailAddress,
@@ -14,6 +15,7 @@ pub struct OpenAccountCommand {
 
 /// 預金するコマンド
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "fake", derive(fake::Dummy))]
 pub struct DepositMoneyCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -22,6 +24,7 @@ pub struct DepositMoneyCommand {
 
 /// 引き出しを行うコマンド
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "fake", derive(fake::Dummy))]
 pub struct WithdrawMoneyCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -31,6 +34,7 @@ pub struct WithdrawMoneyCommand {
 /// 小切手の発行を行うコマンド
 #[cfg(feature = "server")]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "fake", derive(fake::Dummy))]
 pub struct WriteCheckCommand {
     pub account_id: BankAccountId,
     pub amount: f64,
@@ -87,6 +91,8 @@ pub enum BankAccountRefCommand<'a> {
 
 #[cfg(all(test, all(feature = "server", feature = "frontend")))]
 mod serde_test {
+    use fake::{Fake, Faker};
+
     #[test]
     fn bank_account_test() {
         use super::{
@@ -95,9 +101,8 @@ mod serde_test {
         use crate::commands::CommandId;
         use domain::aggregates::bank_account::{AccountName, EmailAddress};
 
-        let account_name =
-            AccountName::from_primitives("山田".to_string(), "太郎".to_string()).unwrap();
-        let email_address = EmailAddress::try_from("xxxyyyzzz@gmail.com".to_string()).unwrap();
+        let account_name: AccountName = Faker.fake();
+        let email_address: EmailAddress = Faker.fake();
         let command_id = CommandId::generate();
 
         let open_account_ref_command = BankAccountRefCommand::OpenAccountCommand(
